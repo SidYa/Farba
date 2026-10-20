@@ -1,4 +1,4 @@
-# Farba
+# Farba <img width="256" height="256" alt="128x128@2x-Bj4Sd95X" src="https://github.com/user-attachments/assets/3005af7d-2c04-497a-a30d-705b95e77f56" />
 
 Fastest, lightweight and open image editor.
 
