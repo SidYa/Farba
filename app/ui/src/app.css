@@ -1,0 +1,166 @@
+/* Design tokens. Every colour used by components comes from here: no hard-coded colours in
+   components. `data-theme` on <html> is set before first paint by /theme-boot.js and kept
+   in sync by lib/theme.svelte.ts. */
+
+:root {
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, monospace;
+  --font-size: 12px;
+
+  --header-h: 36px;
+  --status-h: 22px;
+  --toolbox-w: 38px;
+  --panel-w: 265px;
+  --radius: 4px;
+  --icon: 18px;
+  /* Windows title-bar close button, same in both themes. */
+  --close-hover: #c42b1c;
+  --close-hover-fg: #ffffff;
+  --swatch-border: rgba(0, 0, 0, 0.35);
+  /* Markers drawn over colours (colour dialog cursors): black outside, white inside, so
+     they show on any colour in both themes. */
+  --color-marker-outer: #000000;
+  --color-marker-inner: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-app: #2b2b2b;
+  --bg-header: #232323;
+  --bg-panel: #303030;
+  --bg-input: #1d1d1d;
+  --bg-popup: #353535;
+  --bg-canvas: #1e1e1e;
+  --border: #191919;
+  --border-soft: #3e3e3e;
+  --fg: #dddddd;
+  --fg-dim: #9b9b9b;
+  --fg-faint: #6a6a6a;
+  --hover: rgba(255, 255, 255, 0.08);
+  --pressed: rgba(255, 255, 255, 0.14);
+  --accent: #4b9be8;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(75, 155, 232, 0.28);
+  --danger: #e5534b;
+  --check-a: #999999;
+  --check-b: #666666;
+  --guide: #3fa9ff;
+  --guide-active: #ff4d4d;
+  --guide-back: #000000;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --backdrop: rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg-app: #ececec;
+  --bg-header: #e2e2e2;
+  --bg-panel: #f6f6f6;
+  --bg-input: #ffffff;
+  --bg-popup: #ffffff;
+  --bg-canvas: #c9c9c9;
+  --border: #bdbdbd;
+  --border-soft: #d6d6d6;
+  --fg: #1f1f1f;
+  --fg-dim: #5c5c5c;
+  --fg-faint: #9a9a9a;
+  --hover: rgba(0, 0, 0, 0.07);
+  --pressed: rgba(0, 0, 0, 0.13);
+  --accent: #1f6fd1;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(31, 111, 209, 0.2);
+  --danger: #c62828;
+  --check-a: #cccccc;
+  --check-b: #999999;
+  --guide: #0a7ae8;
+  --guide-active: #e02424;
+  --guide-back: #ffffff;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+  --backdrop: rgba(0, 0, 0, 0.18);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg-app);
+  color: var(--fg);
+  font: var(--font-size) / 1.35 var(--font);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+#app {
+  height: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg-input);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* A drop zone under files dragged from Explorer (lib/dragdrop.svelte.ts): dashed rounded
+   frame plus a label saying what the drop will do. */
+.drop-target::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: 50;
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.drop-target::after {
+  content: attr(data-drop-label);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 51;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-soft);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,26 @@
+[package]
+name = "farba-ai"
+description = "AI background removal for Farba (BiRefNet via ONNX Runtime, DirectML or CPU). Native only."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+# A DLL the add-on host loads at run time (see src/addon.rs); rlib for tests.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+farba-core.workspace = true
+ort = { version = "=2.0.0-rc.13", features = ["half"] }
+half = "2"
+serde_json = "1"
+ureq = { version = "3", default-features = false, features = ["native-tls"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Pure-Rust float maths in place of glibc's (see src/glibc_compat.rs).
+libm = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+# The GPU through DirectML (Windows only; elsewhere the add-on runs on the CPU).
+ort = { version = "=2.0.0-rc.13", features = ["directml"] }

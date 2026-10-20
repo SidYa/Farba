@@ -1,0 +1,9 @@
+[package]
+name = "farba-core"
+description = "Pixel core of Farba: tiles, layers, compositing, tools. No UI or OS dependencies."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]

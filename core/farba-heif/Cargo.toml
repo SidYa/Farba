@@ -1,0 +1,19 @@
+[package]
+name = "farba-heif"
+description = "HEIC / HEIF opening for Farba as an add-on: libheif + libde265 (LGPL DLLs, loaded at run time)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+# A DLL the add-on host loads at run time (see src/lib.rs); rlib for tests.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+libloading = "0.9"
+serde_json = "1"
+
+[target.'cfg(windows)'.dev-dependencies]
+# Tests make a HEIC with the Windows codec, then open it with libheif.
+farba-io = { path = "../farba-io" }

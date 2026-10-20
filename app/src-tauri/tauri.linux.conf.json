@@ -1,0 +1,17 @@
+{
+  "bundle": {
+    "targets": ["deb"],
+    "category": "GraphicsAndDesign",
+    "longDescription": "A fast, lightweight raster image editor.",
+    "resources": {
+      "../../core/target/pdfium/lib/libpdfium.so": "libpdfium.so",
+      "../../core/target/pdfium/LICENSE": "licenses/pdfium-binaries.txt",
+      "../../core/target/pdfium/licenses/": "licenses/pdfium/"
+    },
+    "linux": {
+      "deb": {
+        "section": "graphics"
+      }
+    }
+  }
+}

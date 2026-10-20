@@ -1,0 +1,28 @@
+[package]
+name = "farba-wasm"
+description = "wasm-bindgen API over farba-core for the Farba frontend."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+farba-core.workspace = true
+js-sys = "0.3.106"
+wasm-bindgen = "0.2"
+
+[package.metadata.wasm-pack.profile.release]
+# Rust's default wasm32 features + SIMD (see .cargo/config.toml) must be enabled here too.
+wasm-opt = [
+  "-O3",
+  "--enable-simd",
+  "--enable-bulk-memory",
+  "--enable-nontrapping-float-to-int",
+  "--enable-sign-ext",
+  "--enable-mutable-globals",
+  "--enable-reference-types",
+  "--enable-multivalue",
+]

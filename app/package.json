@@ -1,0 +1,38 @@
+{
+  "name": "farba",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "pnpm wasm && vite build",
+    "preview": "vite preview",
+    "wasm": "wasm-pack build ../core/farba-wasm --target web --out-dir ../../app/ui/src/lib/wasm/pkg --out-name farba_wasm --no-pack",
+    "wasm:dev": "wasm-pack build ../core/farba-wasm --dev --target web --out-dir ../../app/ui/src/lib/wasm/pkg --out-name farba_wasm --no-pack",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "format": "prettier --write \"ui/**/*.{ts,svelte,css,html}\"",
+    "lint": "prettier --check \"ui/**/*.{ts,svelte,css,html}\"",
+    "tauri": "tauri",
+    "icons": "node scripts/gen-icons.mjs",
+    "addons": "node scripts/build-addons.mjs",
+    "heif-libs": "node scripts/build-heif-libs.mjs",
+    "installer": "pnpm addons && tauri build"
+  },
+  "devDependencies": {
+    "@material-symbols/svg-500": "0.48.0",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tauri-apps/cli": "2.12.2",
+    "@tsconfig/svelte": "5.0.8",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3",
+    "vite": "8.3.4"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.12.3",
+    "@tauri-apps/plugin-dialog": "2.8.2"
+  }
+}
