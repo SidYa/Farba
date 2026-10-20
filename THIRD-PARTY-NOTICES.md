@@ -23,16 +23,15 @@ permission to convey the resulting work.
 
 Farba contains or uses the third-party works listed below, under their own licences.
 
-## Pinta and Pinta-plus (MIT)
+## Pinta (MIT)
 
-Parts of Farba are ported from Pinta and from Pinta-plus (a fork of Pinta 3.3):
+Parts of Farba are ported from Pinta:
 
 | Farba component | Source | Used for |
 |---|---|---|
-| Colour picker dialog (`app/ui/src/components/color/`) | Pinta `Pinta.Gui.Widgets/Widgets/ColorPickerDialog.cs`, `ColorPickerSlider.cs` (via Pinta-plus) | Layout, wheel / square maths and behaviour |
+| Colour picker dialog (`app/ui/src/components/color/`) | Pinta `Pinta.Gui.Widgets/Widgets/ColorPickerDialog.cs`, `ColorPickerSlider.cs` | Layout, wheel / square maths and behaviour |
 | Default palette (`DEFAULT_PALETTE` in `app/ui/src/lib/palette.svelte.ts`) | Pinta `Pinta.Core/Extensions/PaletteHelper.cs` | The 34 palette colours |
-| Colors pad (`app/ui/src/components/panels/ColorsPad.svelte`) | Pinta-plus `ColorPalettePanelWidget.cs` | Geometry and behaviour |
-| AI background removal (`core/farba-ai`) | Pinta-plus `Pinta.AiBackgroundRemoval` (BackgroundRemover, ModelStore, BackgroundRemovalModel) | Model catalogue, download checks, session handling and pipeline |
+| Colors pad (`app/ui/src/components/panels/ColorsPad.svelte`) | Pinta's colour palette widget | Geometry and behaviour |
 
 ```
 The MIT License

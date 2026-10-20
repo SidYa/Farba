@@ -1,5 +1,5 @@
 //! AI background removal: BiRefNet ONNX models run with ONNX Runtime (DirectML on the GPU,
-//! CPU as fallback). A port of the owner's Pinta add-in `Pinta.AiBackgroundRemoval` (MIT),
+//! CPU as fallback). A port of the owner's own Pinta add-in `Pinta.AiBackgroundRemoval`,
 //! with the same models, cache folder layout, download checks and pipeline, so results
 //! match:
 //!
