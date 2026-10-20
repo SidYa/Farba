@@ -1,6 +1,5 @@
-# Farba <img width="51" height="51" alt="farba-icon" src="https://github.com/user-attachments/assets/b57924a2-515c-4462-8237-56b3a7eb5cee" />
-
-
+# Farba 
+<img width="51" height="51" alt="farba-icon" src="https://github.com/user-attachments/assets/b57924a2-515c-4462-8237-56b3a7eb5cee" />
 Fastest, lightweight and open image editor.
 
 - Fast and compact interface
