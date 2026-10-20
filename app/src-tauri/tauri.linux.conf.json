@@ -1,6 +1,6 @@
 {
   "bundle": {
-    "targets": ["deb"],
+    "targets": ["deb", "rpm"],
     "category": "GraphicsAndDesign",
     "longDescription": "A fast, lightweight raster image editor.",
     "resources": {

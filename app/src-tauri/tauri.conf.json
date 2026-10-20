@@ -41,6 +41,11 @@
     ],
     "publisher": "Sergii Sidko",
     "copyright": "© 2026 Sergii Sidko",
+    "license": "GPL-3.0-or-later",
+    "resources": {
+      "../../LICENSE": "LICENSE.txt",
+      "../../THIRD-PARTY-NOTICES.md": "THIRD-PARTY-NOTICES.md"
+    },
     "shortDescription": "Farba image editor",
     "longDescription": "A fast, lightweight raster image editor for Windows.",
     "fileAssociations": [

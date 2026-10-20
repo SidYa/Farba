@@ -116,7 +116,12 @@ for (const a of ADDONS) {
     delete manifest.platforms;
   }
   writeFileSync(join(stage, "addon.json"), JSON.stringify(manifest, null, 2) + "\n");
-  const extra = Object.entries(a.files ?? {});
+  // Every package carries Farba's licence (the add-on DLLs contain farba-core, GPL).
+  const extra = Object.entries({
+    "LICENSE.txt": join(core, "..", "LICENSE"),
+    "THIRD-PARTY-NOTICES.md": join(core, "..", "THIRD-PARTY-NOTICES.md"),
+    ...a.files,
+  });
   for (const [name, from] of extra) copyFileSync(from, join(stage, basename(name)));
   files.unshift("addon.json");
   files.push(...extra.map(([name]) => name));

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Builds Farba for Linux (Debian / Ubuntu). Run from anywhere; on WSL build from a copy
-# inside the Linux file system (e.g. ~/farba): /mnt/d is very slow, and node_modules from
-# Windows holds win32 binaries.
-#   build-linux.sh           the .deb (core/target/release/bundle/deb/*.deb) and the add-ons'
-#                            Linux libraries
+# Builds Farba for Linux (.deb for Debian / Ubuntu, .rpm for Fedora / openSUSE). Run from
+# anywhere; on WSL build from a copy inside the Linux file system (e.g. ~/farba): /mnt/d is
+# very slow, and node_modules from Windows holds win32 binaries.
+#   build-linux.sh           the .deb and .rpm (core/target/release/bundle/{deb,rpm}) and the
+#                            add-ons' Linux libraries
 #   build-linux.sh --addons  only the add-ons' Linux libraries (core/target/addons/linux);
 #                            `pnpm addons` on Windows runs this in WSL and packs them with
 #                            the Windows DLLs into one package
@@ -65,9 +65,9 @@ for bin in "${bins[@]}"; do
 done
 if [ -n "$failed" ]; then
   echo "Wrap these functions (see app/src-tauri/src/glibc_compat.rs + build.rs)."
-  rm -rf "$root"/core/target/release/bundle/deb/*.deb "$root/core/target/addons/linux"
+  rm -rf "$root"/core/target/release/bundle/deb/*.deb "$root"/core/target/release/bundle/rpm/*.rpm "$root/core/target/addons/linux"
   exit 1
 fi
 
-[ -z "$addons_only" ] && ls -lh "$root"/core/target/release/bundle/deb/*.deb
+[ -z "$addons_only" ] && ls -lh "$root"/core/target/release/bundle/{deb/*.deb,rpm/*.rpm}
 ls -lh "$root"/core/target/addons/linux/
