@@ -1,6 +1,6 @@
 # Farba
 
-Lightweight image editor.
+Fastest, lightweight and open image editor.
 
 - Fast and compact interface
 - Layers, selections, painting and effects
