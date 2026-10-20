@@ -1,8 +1,27 @@
-# Third-party notices
+# Notices
 
-Farba is licensed under the GNU General Public License, version 3 or later, with an
-additional permission for Microsoft DirectML (see `LICENSE`). It contains or uses the
-third-party works listed below, under their own licences.
+## Farba
+
+Copyright (C) 2026 Sergii Sidko
+
+Farba is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License, version 3, as published by the Free Software Foundation (the
+full text is in `LICENSE`).
+
+Farba is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+### Additional permission under GNU GPL version 3 section 7
+
+If you modify this Program, or any covered work, by linking or combining it with Microsoft
+DirectML (DirectML.dll, or a modified version of that library), containing parts covered
+by the terms of the DirectML licence, the licensors of this Program grant you additional
+permission to convey the resulting work.
+
+## Third-party components
+
+Farba contains or uses the third-party works listed below, under their own licences.
 
 ## Pinta and Pinta-plus (MIT)
 
@@ -44,7 +63,7 @@ licence: Copyright (C) 2007 Rick Brewster, Chris Crosetto, Tom Jackson, Michael 
 Brandon Ortiz, Craig Taylor, Chris Trevino, and Luke Walker. Portions Copyright (C) 2007
 Microsoft Corporation.
 
-## GIMP (GPL-3.0-or-later)
+## GIMP (GPL-3.0-or-later, used under version 3)
 
 GIMP's behaviour is the reference for most tools. No GIMP code is ported at the time of
 writing; ported parts will be listed here.

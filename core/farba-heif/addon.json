@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Opens HEIC / HEIF photos (iPhone and most Android phones) on any PC, without the Windows extensions, with the photo's rotation and transparency. Saving HEIC still needs the Windows HEVC extension. Uses libheif and libde265 (LGPL-3.0).",
   "author": "Sergii Sidko",
-  "license": "GPL-3.0-or-later (libheif, libde265: LGPL-3.0)",
+  "license": "GPL-3.0-only (libheif, libde265: LGPL-3.0)",
   "library": "farba_heif.dll",
   "preload": ["libde265.dll", "heif.dll"],
   "formats": [{ "name": "HEIC image", "extensions": ["heic", "heif", "hif"] }]

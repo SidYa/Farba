@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Removes the background of the current layer with BiRefNet models (downloaded on first use), on the GPU through DirectML (Windows) or on the CPU.",
   "author": "Sergii Sidko",
-  "license": "GPL-3.0-or-later",
+  "license": "GPL-3.0-only",
   "library": "farba_ai.dll",
   "preload": ["DirectML.dll"],
   "platforms": {

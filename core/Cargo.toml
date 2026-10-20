@@ -7,7 +7,7 @@ members = ["farba-core", "farba-wasm", "farba-text", "farba-io", "farba-ai", "fa
 [workspace.package]
 version = "1.0.0"
 edition = "2024"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 authors = ["Sergii Sidko"]
 
 [workspace.dependencies]

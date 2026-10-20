@@ -1,25 +1,3 @@
-Farba - a lightweight raster image editor
-Copyright (C) 2026 Sergii Sidko
-
-This program is free software: you can redistribute it and/or modify it under the terms
-of the GNU General Public License as published by the Free Software Foundation, either
-version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-See the GNU General Public License below for more details.
-
-Additional permission under GNU GPL version 3 section 7
-
-If you modify this Program, or any covered work, by linking or combining it with
-Microsoft DirectML (DirectML.dll, or a modified version of that library), containing
-parts covered by the terms of the DirectML licence, the licensors of this Program grant
-you additional permission to convey the resulting work.
-
-Third-party components and their licences are listed in THIRD-PARTY-NOTICES.md.
-
---------------------------------------------------------------------------------------
-
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

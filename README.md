@@ -11,4 +11,6 @@ Lightweight image editor.
 
 ## License
 
-GPL-3.0-or-later, see [LICENSE](LICENSE). Third-party components: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+GPL-3.0, see [LICENSE](LICENSE), with an additional permission for Microsoft DirectML.
+Copyright notice, the permission and third-party components:
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
