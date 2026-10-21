@@ -27,18 +27,18 @@
   </div>
   <div class="donate">
     <p>
-      Farba was made by one person in Ukraine during the war, to the sound of air raid sirens,
-      guided bombs and Shahed drones.
+      Farba was developed in Ukraine during Russia's brutal invasion, to the sound of air raid
+      sirens, bombings and mortal danger. Even if the author does not survive, this work will go on
+      being useful to others.
     </p>
-    <p>The author will be grateful for any donation.</p>
-    <div class="row">
-      <button type="button" class="paypal" onclick={() => void invoke("open_donate")}>
-        <Icon name="favorite" size={16} />
-        Donate with PayPal
-      </button>
-    </div>
+    <p>I will be grateful for any donation.</p>
   </div>
   {#snippet buttons()}
+    <!-- Donate on the left of the button row, Close on the right (owner request). -->
+    <button type="button" class="paypal" onclick={() => void invoke("open_donate")}>
+      <Icon name="favorite" size={16} />
+      Donate with PayPal
+    </button>
     <button type="submit" class="primary">Close</button>
   {/snippet}
 </Dialog>
@@ -63,12 +63,11 @@
   .donate p {
     margin: 0 0 8px;
   }
-  .row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  .donate p:last-child {
+    margin: 0;
   }
   .paypal {
+    margin-right: auto;
     display: inline-flex;
     gap: 6px;
     align-items: center;

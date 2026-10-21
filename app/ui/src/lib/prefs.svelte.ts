@@ -7,13 +7,14 @@ import { theme } from "./theme.svelte";
 
 export type Accent = "blue" | "teal" | "green" | "orange" | "pink" | "purple";
 
-/** Accent colours per theme ([dark, light]); "blue" is the theme's own (app.css). */
+/** Accent colours per theme ([dark, light]), in rainbow order (the Settings swatches);
+ *  "blue" is the theme's own (app.css). */
 export const ACCENTS: Record<Accent, [string, string]> = {
-  blue: ["#4b9be8", "#1f6fd1"],
-  teal: ["#2bb3a3", "#00897b"],
-  green: ["#5cb860", "#2e7d32"],
-  orange: ["#f0913a", "#d0600a"],
   pink: ["#e8607a", "#c2185b"],
+  orange: ["#f0913a", "#d0600a"],
+  green: ["#5cb860", "#2e7d32"],
+  teal: ["#2bb3a3", "#00897b"],
+  blue: ["#4b9be8", "#1f6fd1"],
   purple: ["#a77be8", "#6a3fc8"],
 };
 

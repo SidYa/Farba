@@ -204,7 +204,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: default;
+    cursor: pointer;
   }
   .item.hover {
     background: var(--hover);

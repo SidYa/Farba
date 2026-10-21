@@ -107,6 +107,27 @@ button {
   color: inherit;
 }
 
+/* The hand pointer over everything clickable (owner request 2026-10-21); disabled controls
+   keep the arrow. */
+button,
+select,
+summary,
+label:has(> input[type="checkbox"]),
+input[type="checkbox"],
+input[type="radio"],
+input[type="color"],
+input[type="range"],
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="option"] {
+  cursor: pointer;
+}
+:disabled,
+[aria-disabled="true"] {
+  cursor: default;
+}
+
 input,
 select {
   font: inherit;

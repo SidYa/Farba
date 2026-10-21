@@ -126,7 +126,10 @@
   }
 
   function onMove(e: PointerEvent) {
-    switch (hit(e)) {
+    const h = hit(e);
+    // The hand pointer over the swatches and the swap / reset icons only.
+    canvas.style.cursor = h ? "pointer" : "";
+    switch (h) {
       case "primary":
         hoverTitle = `Color: ${toHex(palette.primary)}\n\nClick to select primary color.`;
         break;
