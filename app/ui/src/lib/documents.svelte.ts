@@ -7,6 +7,7 @@ import { buildDoc, type Stack } from "./layered";
 import type { PdfExportSettings } from "../components/dialogs/PdfExportDialog.svelte";
 import { notify } from "./notify.svelte";
 import { Doc as CoreDoc, loadCore } from "./wasm/core";
+import { prefs } from "./prefs.svelte";
 import type { View } from "./canvas/renderer";
 import type { Guide } from "./guides.svelte";
 
@@ -79,7 +80,13 @@ export class Doc {
     this.name = name;
     this.path = path;
     this.core = core;
+    this.applyUndoLimits();
     this.sync();
+  }
+
+  /** Settings > Behaviour > Undo history (the core's default: 512 MB / 200 steps). */
+  applyUndoLimits() {
+    this.core.set_undo_limits(prefs.undo.megabytes, prefs.undo.steps);
   }
 
   /** Re-reads everything from the WASM document. */

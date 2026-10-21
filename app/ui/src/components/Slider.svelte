@@ -1,6 +1,8 @@
 <script lang="ts">
   // Labelled slider with a number field and unit (the tool popover style); the mouse wheel
   // over it changes the value by one step.
+  import { numberField } from "../lib/numberfield";
+
   let {
     label,
     value = $bindable(),
@@ -30,14 +32,7 @@
   <div class="row">
     <span class="label">{label}</span>
     <span class="value">
-      <input
-        type="number"
-        {min}
-        {max}
-        {step}
-        {value}
-        onchange={(e) => (value = clamp(e.currentTarget.valueAsNumber || 0))}
-      />
+      <input use:numberField={{ value, min, max, step, onchange: (v) => (value = v) }} />
       {#if unit}<span class="unit">{unit}</span>{/if}
     </span>
   </div>

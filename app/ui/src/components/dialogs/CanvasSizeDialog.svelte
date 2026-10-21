@@ -18,6 +18,7 @@
   import Dialog from "./Dialog.svelte";
   import Icon from "../Icon.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
+  import { numberField } from "../../lib/numberfield";
   import { loadSetting, saveSetting } from "../../lib/settings";
 
   let {
@@ -67,11 +68,7 @@
     <label for="cs-w">Width</label>
     <input
       id="cs-w"
-      type="number"
-      min="1"
-      max={MAX}
-      value={width}
-      oninput={(e) => setWidth(e.currentTarget.valueAsNumber || 0)}
+      use:numberField={{ value: width, min: 1, max: MAX, oninput: (v) => setWidth(Math.round(v)) }}
     />
     <span class="dim">px</span>
     <button
@@ -86,11 +83,12 @@
     <label for="cs-h">Height</label>
     <input
       id="cs-h"
-      type="number"
-      min="1"
-      max={MAX}
-      value={height}
-      oninput={(e) => setHeight(e.currentTarget.valueAsNumber || 0)}
+      use:numberField={{
+        value: height,
+        min: 1,
+        max: MAX,
+        oninput: (v) => setHeight(Math.round(v)),
+      }}
     />
     <span class="dim">px</span>
     <span></span>
@@ -116,21 +114,23 @@
       <label for="cs-x">Offset X</label>
       <input
         id="cs-x"
-        type="number"
-        value={x}
-        oninput={(e) => {
-          anchor = undefined;
-          x = Math.round(e.currentTarget.valueAsNumber || 0);
+        use:numberField={{
+          value: x,
+          oninput: (v) => {
+            anchor = undefined;
+            x = Math.round(v);
+          },
         }}
       />
       <label for="cs-y">Offset Y</label>
       <input
         id="cs-y"
-        type="number"
-        value={y}
-        oninput={(e) => {
-          anchor = undefined;
-          y = Math.round(e.currentTarget.valueAsNumber || 0);
+        use:numberField={{
+          value: y,
+          oninput: (v) => {
+            anchor = undefined;
+            y = Math.round(v);
+          },
         }}
       />
     </div>

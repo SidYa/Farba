@@ -42,7 +42,8 @@
   import { cssColor, theme } from "../../lib/theme.svelte";
   import { CHECK_SIZES, canvasPrefs, rgb01 } from "../../lib/canvasprefs.svelte";
   import { tools } from "../../lib/tools.svelte";
-  import { fit, pointer, screenToImage, viewport, zoomAt } from "../../lib/view.svelte";
+  import { openView, pointer, screenToImage, viewport, zoomAt } from "../../lib/view.svelte";
+  import { prefs } from "../../lib/prefs.svelte";
 
   let { onfirstframe }: { onfirstframe?: () => void } = $props();
 
@@ -276,7 +277,7 @@
     if (!renderer) return;
     const doc = documents.active;
     if (doc?.needsFit) {
-      fit(doc);
+      openView(doc);
       doc.needsFit = false;
     }
     renderer.draw(doc && scene(doc), doc?.view ?? { zoom: 1, x: 0, y: 0 });
@@ -355,6 +356,7 @@
   // Theme or transparency display change (Settings > Canvas).
   $effect(() => {
     void theme.effective;
+    void prefs.canvasBack;
     const style = canvasPrefs.transparency;
     const solid = rgb01(canvasPrefs.solid);
     const size = CHECK_SIZES[canvasPrefs.size] ?? 8;
@@ -385,7 +387,7 @@
       : p;
   }
 
-  /** Cursor over a guide with the Move tool: "row" (horizontal), "col" or "". */
+  /** Cursor over a guide: "row" (horizontal), "col" or "". */
   let guideHover = $state("");
 
   function devicePoint(e: { clientX: number; clientY: number }): [number, number] {
@@ -404,9 +406,9 @@
       return;
     }
     const tool = tools.active;
-    // The Move tool drags guides (GIMP).
-    const gi =
-      e.button === 0 && tool === "move" ? guideAt(doc, doc.view, ...devicePoint(e)) : undefined;
+    // Any tool drags the guide under the pointer (GIMP: only the Move tool, which the owner
+    // missed); dragged back onto a ruler or off the canvas it is removed.
+    const gi = e.button === 0 && !e.altKey ? guideAt(doc, doc.view, ...devicePoint(e)) : undefined;
     if (gi !== undefined) {
       const g = doc.guides[gi]!;
       guideDrag.doc = doc;
@@ -491,7 +493,14 @@
       requestDraw();
       return;
     }
-    if (tools.active === "move" && !moveTool.busy) {
+    const dragging =
+      moveTool.busy ||
+      paintTools.busy ||
+      selectTools.busy ||
+      transformTools.busy ||
+      textTool.busy ||
+      picking !== undefined;
+    if (!dragging) {
       const gi = guideAt(doc, doc.view, ...devicePoint(e));
       guideHover = gi === undefined ? "" : doc.guides[gi]!.horizontal ? "row" : "col";
     } else guideHover = "";
@@ -560,7 +569,8 @@
     if (!doc) return;
     e.preventDefault();
     const dpr = devicePixelRatio;
-    if (e.ctrlKey) {
+    // Ctrl+wheel zooms, or the plain wheel with Settings > Canvas > "Mouse wheel zooms".
+    if (!e.shiftKey && e.ctrlKey !== prefs.wheelZooms) {
       const [sx, sy] = devicePoint(e);
       zoomAt(doc, doc.view.zoom * Math.pow(2, -e.deltaY / 300), sx, sy);
     } else {
@@ -795,14 +805,15 @@
   canvas.mover {
     cursor: move;
   }
+  canvas.picker {
+    cursor: crosshair;
+  }
+  /* After the tool cursors: over a guide every tool can drag it. */
   canvas.guide-row {
     cursor: row-resize;
   }
   canvas.guide-col {
     cursor: col-resize;
-  }
-  canvas.picker {
-    cursor: crosshair;
   }
   canvas {
     display: block;

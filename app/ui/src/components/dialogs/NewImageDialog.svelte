@@ -13,6 +13,7 @@
   import { untrack } from "svelte";
   import Dialog from "./Dialog.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
+  import { numberField } from "../../lib/numberfield";
   import { loadSetting, saveSetting } from "../../lib/settings";
 
   let {
@@ -43,9 +44,29 @@
 <Dialog title="Create a New Image" width={320} onsubmit={submit} oncancel={() => close()}>
   <div class="grid">
     <label for="ni-w">Width</label>
-    <span><input id="ni-w" type="number" min="1" max={MAX} bind:value={width} /> px</span>
+    <span
+      ><input
+        id="ni-w"
+        use:numberField={{
+          value: width,
+          min: 1,
+          max: MAX,
+          oninput: (v) => (width = Math.round(v)),
+        }}
+      /> px</span
+    >
     <label for="ni-h">Height</label>
-    <span><input id="ni-h" type="number" min="1" max={MAX} bind:value={height} /> px</span>
+    <span
+      ><input
+        id="ni-h"
+        use:numberField={{
+          value: height,
+          min: 1,
+          max: MAX,
+          oninput: (v) => (height = Math.round(v)),
+        }}
+      /> px</span
+    >
     <label for="ni-fill">Fill with</label>
     <select id="ni-fill" bind:value={fill}>
       <option value="background">Background colour</option>

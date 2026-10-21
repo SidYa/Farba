@@ -16,6 +16,7 @@ import { importPdfLayers, isPdf, openPdf, pdfOptions, savePdf } from "./pdf";
 import { askSvgSize, isSvg } from "./svg";
 import { notify } from "./notify.svelte";
 import { palette, type Rgba } from "./palette.svelte";
+import { prefs } from "./prefs.svelte";
 import { loadSetting, saveSetting } from "./settings";
 import { wasmBytes } from "./wasm/core";
 
@@ -95,6 +96,37 @@ export async function newImage() {
           ? [255, 255, 255, 255]
           : [0, 0, 0, 0];
   await documents.create(r.width, r.height, fill);
+}
+
+// Settings > Files > "Reopen the last tabs": the open files (not PDF / SVG, which ask how
+// to import them) and the active one, saved whenever the tabs change.
+let tabsRestored = false;
+
+export function rememberTabs() {
+  const docs = documents.list.filter((d) => d.path && !isPdf(d.path) && !isSvg(d.path));
+  const paths = docs.map((d) => d.path!);
+  const active = documents.active?.path;
+  if (tabsRestored) saveSetting("open-tabs", { paths, active });
+}
+
+/** Opens the remembered tabs at startup (silently skips files that are gone). */
+export async function reopenTabs() {
+  try {
+    if (!prefs.reopenTabs) return;
+    const saved = loadSetting<{ paths: string[]; active?: string }>("open-tabs", { paths: [] });
+    for (const path of saved.paths) {
+      try {
+        await documents.openPath(path);
+      } catch {
+        // moved or deleted since
+      }
+    }
+    const active = documents.list.find((d) => d.path === saved.active);
+    if (active) documents.active = active;
+  } finally {
+    tabsRestored = true;
+    if (prefs.reopenTabs) rememberTabs();
+  }
 }
 
 export async function openPaths(paths: string[]) {
@@ -182,7 +214,7 @@ export async function saveDocument(doc: Doc, ask: boolean): Promise<boolean> {
   const writable = path !== undefined && extOf(path) in FORMATS;
   if (ask || !writable) {
     const layered = doc.layers.length > 1 || doc.layers.some((l) => l.isText);
-    const ext = layered ? "ora" : "png";
+    const ext = layered ? "ora" : prefs.flatFormat;
     const defaultPath =
       path === undefined ? `${stem(doc.name)}.${ext}` : writable ? path : `${stem(path)}.${ext}`;
     const picked = await save({
@@ -205,9 +237,12 @@ export async function saveDocument(doc: Doc, ask: boolean): Promise<boolean> {
   let quality = 100;
   if (format === "jpeg" || format === "heic" || format === "avif") {
     let q = doc.quality[format];
-    if (ask || path !== doc.path || q === undefined) {
-      // JPEG starts at 100 for every image; HEIC / AVIF remember the last choice.
-      const initial = q ?? (format === "jpeg" ? 100 : loadSetting(`${format}-quality`, 85));
+    // JPEG starts at the quality of Settings > Files for every image; HEIC / AVIF remember
+    // the last choice. Without "Ask for the quality" that value is used directly.
+    const initial =
+      q ?? (format === "jpeg" ? prefs.jpegQuality : loadSetting(`${format}-quality`, 85));
+    if (!prefs.askQuality) q = initial;
+    else if (ask || path !== doc.path || q === undefined) {
       q = await openDialog(QualityDialog, {
         title: `Export as ${format.toUpperCase()}`,
         name,
@@ -288,17 +323,21 @@ function unsavedCount(): number {
 
 export async function closeAll() {
   const n = unsavedCount();
-  const r = await choose({
-    title: "Close All",
-    message:
-      n === 0
-        ? "Close all tabs?"
-        : `Close all tabs?\n${n === 1 ? "One image has" : `${n} images have`} unsaved changes that will be lost.`,
-    buttons: [
-      { label: "Cancel", value: "cancel" },
-      { label: "Close All", value: "ok", primary: true, danger: n > 0 },
-    ],
-  });
+  // Settings > Behaviour: without "Ask before closing all tabs" only unsaved changes ask.
+  const r =
+    n === 0 && !prefs.askCloseAll
+      ? { value: "ok" }
+      : await choose({
+          title: "Close All",
+          message:
+            n === 0
+              ? "Close all tabs?"
+              : `Close all tabs?\n${n === 1 ? "One image has" : `${n} images have`} unsaved changes that will be lost.`,
+          buttons: [
+            { label: "Cancel", value: "cancel" },
+            { label: "Close All", value: "ok", primary: true, danger: n > 0 },
+          ],
+        });
   if (r?.value !== "ok") return;
   for (const d of [...documents.list]) documents.close(d);
 }

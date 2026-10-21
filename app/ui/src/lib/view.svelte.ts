@@ -2,6 +2,7 @@
 // actions (zoom presets, fit) can work without a reference to the component.
 import type { View } from "./canvas/renderer";
 import { documents, type Doc } from "./documents.svelte";
+import { prefs } from "./prefs.svelte";
 
 export const viewport = $state({ width: 1, height: 1 });
 
@@ -35,14 +36,25 @@ export function zoomStep(doc: Doc, dir: 1 | -1, sx?: number, sy?: number) {
   if (next) zoomAt(doc, next, sx, sy);
 }
 
-export function fit(doc: Doc) {
+/** Fits `doc` into the viewport, centred; small images stay at 100% unless `enlarge`. */
+export function fit(doc: Doc, enlarge = false) {
   const z = Math.min(viewport.width / doc.width, viewport.height / doc.height);
   // Never enlarge small images past 100% when fitting on open (GIMP does the same).
-  const zoom = Math.min(z, 1);
+  const zoom = enlarge ? Math.min(MAX_ZOOM, z) : Math.min(z, 1);
   doc.view = {
     zoom,
     x: Math.round((viewport.width - doc.width * zoom) / 2),
     y: Math.round((viewport.height - doc.height * zoom) / 2),
+  };
+}
+
+/** The first view of a newly opened image (Settings > Canvas > "Zoom when opening"). */
+export function openView(doc: Doc) {
+  if (prefs.openZoom !== "actual") return fit(doc, prefs.openZoom === "fill");
+  doc.view = {
+    zoom: 1,
+    x: Math.round((viewport.width - doc.width) / 2),
+    y: Math.round((viewport.height - doc.height) / 2),
   };
 }
 

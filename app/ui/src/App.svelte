@@ -15,7 +15,8 @@
   import { handleKeydown } from "./lib/actions";
   import { registerCommands } from "./lib/commands";
   import { initDragDrop } from "./lib/dragdrop.svelte";
-  import { confirmQuit, openPaths } from "./lib/files";
+  import { confirmQuit, openPaths, rememberTabs, reopenTabs } from "./lib/files";
+  import { prefs } from "./lib/prefs.svelte";
   import { theme } from "./lib/theme.svelte";
   import { loadCore, warm_up_heap } from "./lib/wasm/core";
   import { addons } from "./lib/addons.svelte";
@@ -24,6 +25,12 @@
   registerCommands();
 
   $effect(() => theme.apply());
+  $effect(() => prefs.applyColors());
+  $effect(() => prefs.applyScale());
+  // Settings > Files > "Reopen the last tabs": remember the open files.
+  $effect(() => {
+    if (prefs.reopenTabs) rememberTabs();
+  });
 
   function firstFrame() {
     // The window is created hidden; show it once something is painted (no white flash).
@@ -39,7 +46,9 @@
     void invoke("startup_mark", { stage: "mount" });
     void loadCore();
     void addons.refresh();
-    void invoke<string[]>("startup_files").then(openPaths);
+    void reopenTabs()
+      .then(() => invoke<string[]>("startup_files"))
+      .then(openPaths);
     // Files from another start of Farba (single instance: opened here as tabs).
     const unFiles = listen<string[]>("open-files", (e) => void openPaths(e.payload));
 

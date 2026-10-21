@@ -21,12 +21,16 @@
     <div>
       <div class="name">Farba</div>
       {#if version}<div class="dim">Version {version}</div>{/if}
-      <div class="dim">A lightweight raster image editor</div>
+      <div class="dim">Fast, light and useful image editor</div>
       <div class="dim">© 2026 Sergii Sidko</div>
     </div>
   </div>
   <div class="donate">
-    <p>If Farba is useful to you, you can support its development with a donation.</p>
+    <p>
+      Farba was made in Ukraine during the war, to the sound of air raid sirens, guided bombs and
+      jet-powered Shaheds.
+    </p>
+    <p>The author does not insist, but would be glad and grateful for any donation.</p>
     <div class="row">
       <button type="button" class="paypal" onclick={() => void invoke("open_donate")}>
         <Icon name="favorite" size={16} />

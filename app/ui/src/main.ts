@@ -1,7 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import { mount } from "svelte";
 import App from "./App.svelte";
+import { prefs } from "./lib/prefs.svelte";
 import "./app.css";
+
+// Accent / canvas colours and the interface size before the first frame (the window is
+// shown only after it).
+prefs.applyColors();
+prefs.applyScale();
 
 // No browser context menu (Back, Refresh, Inspect...) anywhere in the app; text fields keep
 // theirs (cut / copy / paste). Components open their own menus in their handlers.

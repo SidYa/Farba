@@ -14,6 +14,7 @@
   import Dialog from "./Dialog.svelte";
   import Icon from "../Icon.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
+  import { numberField } from "../../lib/numberfield";
   import { loadSetting, saveSetting } from "../../lib/settings";
 
   let {
@@ -53,21 +54,17 @@
     <label for="si-w">Width</label>
     <input
       id="si-w"
-      type="number"
-      min="1"
-      max={MAX}
-      value={width}
-      oninput={(e) => setWidth(e.currentTarget.valueAsNumber || 0)}
+      use:numberField={{ value: width, min: 1, max: MAX, oninput: (v) => setWidth(Math.round(v)) }}
     />
     <span class="dim">px</span>
     <input
-      type="number"
-      min="0.01"
-      step="any"
-      value={pct(width, ow)}
       aria-label="Width in percent"
-      oninput={(e) =>
-        setWidth(Math.max(1, Math.round((ow * (e.currentTarget.valueAsNumber || 0)) / 100)))}
+      use:numberField={{
+        value: pct(width, ow),
+        min: 0.01,
+        decimals: 2,
+        oninput: (v) => setWidth(Math.max(1, Math.round((ow * v) / 100))),
+      }}
     />
     <span class="dim">%</span>
     <button
@@ -83,21 +80,22 @@
     <label for="si-h">Height</label>
     <input
       id="si-h"
-      type="number"
-      min="1"
-      max={MAX}
-      value={height}
-      oninput={(e) => setHeight(e.currentTarget.valueAsNumber || 0)}
+      use:numberField={{
+        value: height,
+        min: 1,
+        max: MAX,
+        oninput: (v) => setHeight(Math.round(v)),
+      }}
     />
     <span class="dim">px</span>
     <input
-      type="number"
-      min="0.01"
-      step="any"
-      value={pct(height, oh)}
       aria-label="Height in percent"
-      oninput={(e) =>
-        setHeight(Math.max(1, Math.round((oh * (e.currentTarget.valueAsNumber || 0)) / 100)))}
+      use:numberField={{
+        value: pct(height, oh),
+        min: 0.01,
+        decimals: 2,
+        oninput: (v) => setHeight(Math.max(1, Math.round((oh * v) / 100))),
+      }}
     />
     <span class="dim">%</span>
     <span></span>

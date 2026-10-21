@@ -25,7 +25,7 @@ import {
 } from "./files";
 import { notify } from "./notify.svelte";
 import { palette } from "./palette.svelte";
-import { loadSetting, saveSetting } from "./settings";
+import { prefs } from "./prefs.svelte";
 import { guidePrefs } from "./guides.svelte";
 import { confirmRasterize } from "./textguard";
 import { theme } from "./theme.svelte";
@@ -62,7 +62,7 @@ export async function deleteLayers(doc: Doc) {
     notify("An image must keep at least one layer", "error");
     return;
   }
-  if (loadSetting("ask-delete-layer", true)) {
+  if (prefs.askDeleteLayer) {
     const what =
       ids.length === 1 ? `the layer “${doc.layer(ids[0]!)?.name}”` : `${ids.length} layers`;
     const r = await choose({
@@ -75,7 +75,7 @@ export async function deleteLayers(doc: Doc) {
       ],
     });
     if (r?.value !== "delete") return;
-    if (r.checked) saveSetting("ask-delete-layer", false);
+    if (r.checked) prefs.set("askDeleteLayer", false);
   }
   doc.run((c) => c.delete_layers(Uint32Array.from(ids)));
 }

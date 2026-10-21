@@ -20,6 +20,7 @@
   import Dialog from "./Dialog.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
   import { formatPageRange, parsePageRange } from "../../lib/pdfrange";
+  import { numberField } from "../../lib/numberfield";
   import { loadSetting, saveSetting } from "../../lib/settings";
 
   let {
@@ -202,32 +203,35 @@
     <label for="pdf-w">Width</label>
     <input
       id="pdf-w"
-      type="number"
-      min="1"
-      max={MAX}
-      value={width}
-      onchange={(e) => (resolution = ((e.currentTarget.valueAsNumber || 1) * 72) / pw)}
+      use:numberField={{
+        value: width,
+        min: 1,
+        max: MAX,
+        oninput: (v) => (resolution = (Math.max(1, v) * 72) / pw),
+      }}
     />
     <span class="dim">pixels</span>
     <label for="pdf-h">Height</label>
     <input
       id="pdf-h"
-      type="number"
-      min="1"
-      max={MAX}
-      value={height}
-      onchange={(e) => (resolution = ((e.currentTarget.valueAsNumber || 1) * 72) / ph)}
+      use:numberField={{
+        value: height,
+        min: 1,
+        max: MAX,
+        oninput: (v) => (resolution = (Math.max(1, v) * 72) / ph),
+      }}
     />
     <span class="dim">pixels</span>
     <label for="pdf-res">Resolution</label>
     <input
       id="pdf-res"
-      type="number"
-      min="5"
-      max="65536"
-      step="any"
-      value={Math.round(resolution * 100) / 100}
-      onchange={(e) => (resolution = Math.max(5, e.currentTarget.valueAsNumber || 300))}
+      use:numberField={{
+        value: resolution,
+        min: 5,
+        max: 65536,
+        decimals: 2,
+        oninput: (v) => (resolution = Math.max(5, v)),
+      }}
     />
     <span class="dim">pixels/in</span>
   </div>

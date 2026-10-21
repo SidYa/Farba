@@ -6,6 +6,7 @@
   import Dialog from "./Dialog.svelte";
   import Slider from "../Slider.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
+  import { numberField } from "../../lib/numberfield";
   import type { Doc, LayerInfo, LayerProps } from "../../lib/documents.svelte";
 
   let { close, doc, layer }: { doc: Doc; layer: LayerInfo } & DialogProps<LayerProps> = $props();
@@ -55,8 +56,8 @@
   <div class="row">
     <span class="label">Offset</span>
     <span class="offsets">
-      X <input type="number" bind:value={x} />
-      Y <input type="number" bind:value={y} />
+      X <input use:numberField={{ value: x, oninput: (v) => (x = Math.round(v)) }} />
+      Y <input use:numberField={{ value: y, oninput: (v) => (y = Math.round(v)) }} />
     </span>
   </div>
   <label class="check"><input type="checkbox" bind:checked={visible} /> Visible</label>

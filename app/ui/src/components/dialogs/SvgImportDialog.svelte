@@ -5,6 +5,7 @@
   import { untrack } from "svelte";
   import Dialog from "./Dialog.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
+  import { numberField } from "../../lib/numberfield";
   import { loadSetting, saveSetting } from "../../lib/settings";
 
   let {
@@ -39,32 +40,35 @@
     <label for="svg-w">Width</label>
     <input
       id="svg-w"
-      type="number"
-      min="1"
-      max={MAX}
-      value={width}
-      onchange={(e) => (resolution = ((e.currentTarget.valueAsNumber || 1) * 96) / sw)}
+      use:numberField={{
+        value: width,
+        min: 1,
+        max: MAX,
+        oninput: (v) => (resolution = (Math.max(1, v) * 96) / sw),
+      }}
     />
     <span class="dim">pixels</span>
     <label for="svg-h">Height</label>
     <input
       id="svg-h"
-      type="number"
-      min="1"
-      max={MAX}
-      value={height}
-      onchange={(e) => (resolution = ((e.currentTarget.valueAsNumber || 1) * 96) / sh)}
+      use:numberField={{
+        value: height,
+        min: 1,
+        max: MAX,
+        oninput: (v) => (resolution = (Math.max(1, v) * 96) / sh),
+      }}
     />
     <span class="dim">pixels</span>
     <label for="svg-res">Resolution</label>
     <input
       id="svg-res"
-      type="number"
-      min="1"
-      max="65536"
-      step="any"
-      value={Math.round(resolution * 100) / 100}
-      onchange={(e) => (resolution = Math.max(1, e.currentTarget.valueAsNumber || 96))}
+      use:numberField={{
+        value: resolution,
+        min: 1,
+        max: 65536,
+        decimals: 2,
+        oninput: (v) => (resolution = Math.max(1, v)),
+      }}
     />
     <span class="dim">pixels/in</span>
   </div>

@@ -1,6 +1,6 @@
 // Rulers and guides (GIMP): off by default, Settings > Canvas > "Show rulers and guides".
-// Drag from a ruler onto the canvas to add a guide; drag a guide with the Move tool to move
-// it, or off the canvas to remove it; Image > Remove All Guides. Rectangle / Ellipse Select
+// Drag from a ruler onto the canvas to add a guide; drag a guide (with any tool) to move it,
+// or back onto a ruler / off the canvas to remove it; Image > Remove All Guides. Rectangle / Ellipse Select
 // snap to guides. Guides belong to the document's view (not undo steps, not saved).
 import type { View } from "./canvas/renderer";
 import type { Doc } from "./documents.svelte";

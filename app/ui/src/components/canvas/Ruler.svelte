@@ -6,6 +6,7 @@
   import { finishGuideDrag, guideDrag, guidePos } from "../../lib/guides.svelte";
   import { cssColor, theme } from "../../lib/theme.svelte";
   import { pointer } from "../../lib/view.svelte";
+  import { prefs } from "../../lib/prefs.svelte";
 
   let {
     horizontal,
@@ -100,6 +101,7 @@
     void pointer.x;
     void pointer.y;
     void theme.effective;
+    void prefs.accent;
     void size;
     requestAnimationFrame(draw);
   });

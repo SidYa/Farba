@@ -6,6 +6,7 @@
   import { shortcutOf } from "../../lib/actions";
   import { TOOLS, tools, type ToolOption } from "../../lib/tools.svelte";
   import FontPicker from "../FontPicker.svelte";
+  import { numberField } from "../../lib/numberfield";
 
   let { toolId, anchor, onclose }: { toolId: string; anchor: DOMRect; onclose: () => void } =
     $props();
@@ -95,13 +96,13 @@
             <span class="label">{o.label}</span>
             <span class="value">
               <input
-                type="number"
-                min={o.min}
-                max={o.max}
-                step={o.step ?? 1}
-                value={value<number>(o)}
-                onchange={(e) =>
-                  tools.setOption(toolId, o.key, clamp(o, e.currentTarget.valueAsNumber || 0))}
+                use:numberField={{
+                  value: value<number>(o),
+                  min: o.min,
+                  max: o.max,
+                  step: o.step ?? 1,
+                  onchange: (v) => tools.setOption(toolId, o.key, v),
+                }}
               />
               {#if o.unit}<span class="unit">{o.unit}</span>{/if}
             </span>

@@ -13,6 +13,7 @@
 import type { Doc } from "../documents.svelte";
 import { notify } from "../notify.svelte";
 import { palette, type Rgba } from "../palette.svelte";
+import { prefs } from "../prefs.svelte";
 import { tools } from "../tools.svelte";
 
 export const RETOUCH_TOOLS = ["clone", "heal", "smudge", "blur-sharpen", "dodge-burn"];
@@ -290,7 +291,8 @@ class PaintTools {
       stroke(ctx, false);
     }
     ctx.beginPath();
-    ctx.arc(sx(c.x), sy(c.y), Math.max(r, 2 * dpr), 0, Math.PI * 2);
+    // Settings > Canvas > "Show the brush outline" (the Shift line is drawn anyway).
+    if (prefs.brushOutline) ctx.arc(sx(c.x), sy(c.y), Math.max(r, 2 * dpr), 0, Math.PI * 2);
     if (c.shift && !this.painting && this.last?.doc === doc) {
       ctx.moveTo(sx(this.last.x), sy(this.last.y));
       ctx.lineTo(sx(c.x), sy(c.y));

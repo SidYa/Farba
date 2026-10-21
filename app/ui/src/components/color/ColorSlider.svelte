@@ -2,6 +2,8 @@
   // One colour component (Pinta's ColorPickerSlider): label, a gradient bar showing what
   // the component does to the current colour, and a number field. Drag or click the bar;
   // the mouse wheel steps by 1.
+  import { numberField } from "../../lib/numberfield";
+
   let {
     label,
     value,
@@ -57,13 +59,7 @@
     <div class="fill" style:background={gradient}></div>
     <div class="marker" style:left="{(value / max) * 100}%"></div>
   </div>
-  <input
-    type="number"
-    min="0"
-    {max}
-    value={Math.round(value)}
-    onchange={(e) => onchange(clamp(e.currentTarget.valueAsNumber || 0))}
-  />
+  <input use:numberField={{ value, min: 0, max, onchange: (v) => onchange(clamp(v)) }} />
 </div>
 
 <style>

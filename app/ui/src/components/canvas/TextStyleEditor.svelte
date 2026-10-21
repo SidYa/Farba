@@ -6,6 +6,7 @@
   import Icon from "../Icon.svelte";
   import { textTool } from "../../lib/canvas/texttool.svelte";
   import FontPicker from "../FontPicker.svelte";
+  import { numberField } from "../../lib/numberfield";
   import type { SpanStyle } from "../../lib/text/model";
 
   let { left, top }: { left: number; top: number } = $props();
@@ -51,11 +52,6 @@
     drag = undefined;
     textTool.focus();
   }
-
-  function number(e: Event): number | undefined {
-    const v = (e.currentTarget as HTMLInputElement).valueAsNumber;
-    return Number.isFinite(v) ? v : undefined;
-  }
 </script>
 
 <div
@@ -70,14 +66,13 @@
   <FontPicker value={font} title="Font of the selected text" onchange={(f) => apply({ font: f })} />
   <input
     class="num"
-    type="number"
-    min="1"
-    max="1000"
     title="Size of the selected text (px)"
-    value={Math.round(size * 10) / 10}
-    onchange={(e) => {
-      const v = number(e);
-      if (v && v > 0) apply({ size: v });
+    use:numberField={{
+      value: size,
+      min: 1,
+      max: 1000,
+      decimals: 1,
+      onchange: (v) => apply({ size: v }),
     }}
   />
   <input
@@ -117,20 +112,21 @@
     <Icon name="vertical_align_center" size={16} />
     <input
       class="num"
-      type="number"
-      step="1"
-      value={style.baseline ?? 0}
-      onchange={(e) => apply({ baseline: number(e) || undefined })}
+      use:numberField={{
+        value: style.baseline ?? 0,
+        onchange: (v) => apply({ baseline: v || undefined }),
+      }}
     />
   </label>
   <label title="Kerning of the selected text (px)">
     <Icon name="format_letter_spacing" size={16} />
     <input
       class="num"
-      type="number"
-      step="0.5"
-      value={style.kerning ?? 0}
-      onchange={(e) => apply({ kerning: number(e) || undefined })}
+      use:numberField={{
+        value: style.kerning ?? 0,
+        step: 0.5,
+        onchange: (v) => apply({ kerning: v || undefined }),
+      }}
     />
   </label>
   <button

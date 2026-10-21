@@ -26,6 +26,7 @@
   import { untrack } from "svelte";
   import Dialog from "./Dialog.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
+  import { numberField } from "../../lib/numberfield";
 
   let {
     close,
@@ -57,7 +58,16 @@
   <div class="file">{name}</div>
   <div class="row">
     <label for="pdf-res">Resolution</label>
-    <input id="pdf-res" type="number" min="5" max="65536" step="any" bind:value={o.resolution} />
+    <input
+      id="pdf-res"
+      use:numberField={{
+        value: o.resolution,
+        min: 5,
+        max: 65536,
+        decimals: 2,
+        oninput: (v) => (o.resolution = v),
+      }}
+    />
     <span class="dim">pixels/in</span>
   </div>
   <div class="dim">Page size: {mm(width)} × {mm(height)} mm</div>
