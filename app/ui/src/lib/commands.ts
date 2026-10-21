@@ -263,8 +263,9 @@ function pixels(run: (doc: Doc) => unknown): (doc: Doc) => Promise<unknown> {
   return async (doc) => ((await confirmRasterize(doc)) ? run(doc) : undefined);
 }
 
-/** Changes a slider option of the active tool by `delta` and shows the new value. */
-function adjustToolOption(key: string, delta: number) {
+/** Changes a slider option of the active tool by `delta` and shows the new value (keys,
+ * Ctrl+Alt+wheel). */
+export function adjustToolOption(key: string, delta: number) {
   const o = tools.def.options.find((x) => x.key === key);
   if (o?.type !== "slider") return;
   const v = Math.min(o.max, Math.max(o.min, tools.option<number>(tools.active, key) + delta));

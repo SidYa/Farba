@@ -19,8 +19,9 @@ import { tools } from "../tools.svelte";
 export const RETOUCH_TOOLS = ["clone", "heal", "smudge", "blur-sharpen", "dodge-burn"];
 export const BRUSH_TOOLS = ["paintbrush", "pencil", "eraser", ...RETOUCH_TOOLS];
 export const PAINT_TOOLS = [...BRUSH_TOOLS, "bucket-fill", "gradient"];
-/** Tools where holding Alt turns the pointer into the Color Picker. */
-export const ALT_PICK_TOOLS = ["paintbrush", "pencil"];
+/** Tools where holding Alt turns the pointer into the Color Picker (all painting tools,
+ *  owner request 2026-10-21; GIMP uses Ctrl). */
+export const ALT_PICK_TOOLS = PAINT_TOOLS;
 
 const CRITERIA = ["composite", "red", "green", "blue", "alpha", "hue", "saturation", "value"];
 
@@ -45,8 +46,10 @@ class PaintTools {
   private last: { doc: Doc; x: number; y: number } | undefined;
   /** Pointer in image coordinates (for the brush outline), undefined when outside. */
   private cursor: { x: number; y: number; shift: boolean } | undefined;
-  /** Alt is held (Paintbrush / Pencil pick colours: no brush outline). */
-  alt = false;
+  /** Alt is held (painting tools pick colours: no brush outline). */
+  alt = $state(false);
+  /** Ctrl is held too (Ctrl+Alt+wheel sizes the brush: the outline stays). */
+  ctrl = $state(false);
   /** Clone / Heal source (Ctrl+click): image point and the layer it was set on. */
   private source: { doc: Doc; x: number; y: number; layer: number } | undefined;
   /** "Aligned": the offset fixed by the first stroke after the source was set. */
@@ -191,6 +194,7 @@ class PaintTools {
   move(e: PointerEvent, points: [number, number][]) {
     const [ix, iy] = points[points.length - 1]!;
     this.cursor = { x: ix, y: iy, shift: e.shiftKey };
+    this.ctrl = e.ctrlKey;
     // Also after Alt+Tab, whose key-up never reaches the page.
     this.alt = e.altKey;
     if (this.painting) {
@@ -245,6 +249,16 @@ class PaintTools {
     }
   }
 
+  /** Alt alone with a painting tool: the Color Picker, not the brush (no outline). */
+  picksColor(tool: string): boolean {
+    return this.alt && !this.ctrl && !this.painting && ALT_PICK_TOOLS.includes(tool);
+  }
+
+  /** The brush outline replaces the pointer (no crosshair inside the circle). */
+  showsOutline(tool: string): boolean {
+    return prefs.brushOutline && BRUSH_TOOLS.includes(tool) && !this.picksColor(tool);
+  }
+
   /** Draws the brush outline, the Shift line or the gradient line (device pixels). */
   drawOverlay(ctx: CanvasRenderingContext2D, doc: Doc | undefined, tool: string) {
     if (!doc) return;
@@ -270,7 +284,7 @@ class PaintTools {
     }
     const c = this.cursor;
     if (!c || !BRUSH_TOOLS.includes(tool)) return;
-    if (this.alt && !this.painting && ALT_PICK_TOOLS.includes(tool)) return;
+    if (this.picksColor(tool)) return;
     const r = (tools.option<number>(tool, "size") / 2) * v.zoom;
     // Clone / Heal: a cross where the source pixels come from.
     const src = this.source;

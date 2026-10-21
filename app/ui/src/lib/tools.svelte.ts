@@ -269,7 +269,7 @@ export const TOOLS: ToolDef[] = [
     name: "Bucket Fill",
     icon: "format_color_fill",
     keys: ["Shift+B"],
-    help: "Fill selected area with a colour (Shift: toggle the affected area)",
+    help: "Fill selected area with a colour (Shift: toggle the affected area; Alt: pick a colour)",
     options: [
       {
         key: "fill",
@@ -302,7 +302,7 @@ export const TOOLS: ToolDef[] = [
     name: "Gradient",
     icon: "gradient",
     keys: ["G"],
-    help: "Fill with a colour gradient (Ctrl: snap the angle)",
+    help: "Fill with a colour gradient (Ctrl: snap the angle; Alt: pick a colour)",
     options: [
       {
         key: "gradient",
@@ -373,7 +373,7 @@ export const TOOLS: ToolDef[] = [
     name: "Eraser",
     icon: "ink_eraser",
     keys: ["Shift+E"],
-    help: "Erase to transparency (Shift+click: straight line)",
+    help: "Erase to transparency (Shift+click: straight line; Alt: pick a colour)",
     options: [
       brushSize,
       hardness,
@@ -386,7 +386,7 @@ export const TOOLS: ToolDef[] = [
     name: "Clone",
     icon: "approval",
     keys: ["C"],
-    help: "Paint with pixels from another place (Ctrl+click: set the source)",
+    help: "Paint with pixels from another place (Ctrl+click: set the source; Alt: pick a colour)",
     options: [brushSize, hardness, opacity, cloneAlignment, sampleMergedSource],
   },
   {
@@ -394,7 +394,7 @@ export const TOOLS: ToolDef[] = [
     name: "Heal",
     icon: "healing",
     keys: ["H"],
-    help: "Remove spots: clone that blends into the surroundings (Ctrl+click: set the source)",
+    help: "Remove spots: clone that blends into the surroundings (Ctrl+click: set the source; Alt: pick a colour)",
     options: [brushSize, hardness, opacity, cloneAlignment, sampleMergedSource],
   },
   {
@@ -402,7 +402,7 @@ export const TOOLS: ToolDef[] = [
     name: "Smudge",
     icon: "pan_tool_alt",
     keys: ["S"],
-    help: "Smear the pixels along the stroke",
+    help: "Smear the pixels along the stroke (Alt: pick a colour)",
     options: [
       brushSize,
       hardness,
@@ -416,7 +416,7 @@ export const TOOLS: ToolDef[] = [
     name: "Blur / Sharpen",
     icon: "water_drop",
     keys: ["Shift+U"],
-    help: "Blur or sharpen with a brush (Ctrl: the other mode)",
+    help: "Blur or sharpen with a brush (Ctrl: the other mode; Alt: pick a colour)",
     options: [
       brushSize,
       hardness,
@@ -439,7 +439,7 @@ export const TOOLS: ToolDef[] = [
     name: "Dodge / Burn",
     icon: "tonality",
     keys: ["Shift+D"],
-    help: "Lighten (dodge) or darken (burn) with a brush (Ctrl: the other mode)",
+    help: "Lighten (dodge) or darken (burn) with a brush (Ctrl: the other mode; Alt: pick a colour)",
     options: [
       brushSize,
       hardness,

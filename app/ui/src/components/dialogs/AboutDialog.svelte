@@ -27,10 +27,10 @@
   </div>
   <div class="donate">
     <p>
-      Farba was made in Ukraine during the war, to the sound of air raid sirens, guided bombs and
-      jet-powered Shaheds.
+      Farba was made by one person in Ukraine during the war, to the sound of air raid sirens,
+      guided bombs and Shahed drones.
     </p>
-    <p>The author does not insist, but would be glad and grateful for any donation.</p>
+    <p>The author will be grateful for any donation.</p>
     <div class="row">
       <button type="button" class="paypal" onclick={() => void invoke("open_donate")}>
         <Icon name="favorite" size={16} />

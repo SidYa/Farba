@@ -30,6 +30,7 @@
     type Session,
   } from "../../lib/canvas/transformtools.svelte";
   import { isTextInput } from "../../lib/actions";
+  import { adjustToolOption } from "../../lib/commands";
   import { confirmRasterize, rasterAllowed } from "../../lib/textguard";
   import { moveTool } from "../../lib/canvas/movetool.svelte";
   import { ALT_PICK_TOOLS, PAINT_TOOLS, paintTools } from "../../lib/canvas/painttools.svelte";
@@ -79,7 +80,8 @@
 
   let pan: { x: number; y: number; vx: number; vy: number } | undefined;
   /** Color Picker drag: which colour it sets and the last picked colour. */
-  let picking: { doc: Doc; primary: boolean; color?: Rgba } | undefined;
+  /** Color Picker drag; `alt`: picked with Alt from a painting tool. */
+  let picking: { doc: Doc; primary: boolean; alt?: boolean; color?: Rgba } | undefined;
 
   const FULL = 0xffffffff;
 
@@ -418,10 +420,15 @@
       requestDraw();
       return;
     }
-    if (e.altKey && ALT_PICK_TOOLS.includes(tool) && (e.button === 0 || e.button === 2)) {
-      // Paintbrush / Pencil + Alt: the Color Picker (left: FG, right: BG).
+    if (
+      e.altKey &&
+      !e.ctrlKey &&
+      ALT_PICK_TOOLS.includes(tool) &&
+      (e.button === 0 || e.button === 2)
+    ) {
+      // A painting tool + Alt: the Color Picker (left: FG, right: BG), of what is seen.
       e.preventDefault();
-      picking = { doc, primary: e.button === 0 };
+      picking = { doc, primary: e.button === 0, alt: true };
       pickAt(e);
     } else if (e.button === 0 && tool === "text") {
       // Keep the keyboard on the hidden text input (a press would move the focus away).
@@ -458,13 +465,16 @@
    */
   function pickAt(e: PointerEvent) {
     if (!picking) return;
-    const { doc, primary } = picking;
+    const { doc, primary, alt } = picking;
     const average = tools.option<boolean>("color-picker", "average");
     const radius = average ? tools.option<number>("color-picker", "radius") : 1;
-    const merged = tools.option<boolean>("color-picker", "sampleMerged");
+    // Alt picks the colour on screen (all visible layers): picking from the active layer
+    // only gave transparent or hidden colours with several layers.
+    const merged = alt || tools.option<boolean>("color-picker", "sampleMerged");
     const [ix, iy] = screenToImage(doc.view, ...devicePoint(e));
     const p = doc.core.sample(ix, iy, radius, merged);
-    if (!p) return;
+    // Nothing visible there (Alt): keep the colour instead of picking "transparent".
+    if (!p || (alt && p[3] === 0)) return;
     const c = { r: p[0]!, g: p[1]!, b: p[2]!, a: p[3]! / 255 };
     picking.color = c;
     palette.setColor(primary, c, false);
@@ -569,6 +579,15 @@
     if (!doc) return;
     e.preventDefault();
     const dpr = devicePixelRatio;
+    if (e.ctrlKey && e.altKey) {
+      // Ctrl+Alt+wheel sizes the tool (GIMP): up = bigger, by about 10% per notch.
+      if (!tools.def.options.some((o) => o.key === "size")) return;
+      const size = tools.option<number>(tools.active, "size");
+      const step = Math.max(1, Math.round(size * 0.1));
+      adjustToolOption("size", e.deltaY < 0 ? step : -step);
+      requestDraw();
+      return;
+    }
     // Ctrl+wheel zooms, or the plain wheel with Settings > Canvas > "Mouse wheel zooms".
     if (!e.shiftKey && e.ctrlKey !== prefs.wheelZooms) {
       const [sx, sy] = devicePoint(e);
@@ -612,6 +631,10 @@
       if (e.code === "Space" && !isTextInput(e.target)) spaceDown = e.type === "keydown";
       if (e.key === "Alt" && paintTools.alt !== (e.type === "keydown")) {
         paintTools.alt = e.type === "keydown";
+        requestDraw();
+      }
+      if (e.key === "Control" && paintTools.ctrl !== (e.type === "keydown")) {
+        paintTools.ctrl = e.type === "keydown";
         requestDraw();
       }
       // Alt alone would move the focus to the window menu.
@@ -672,6 +695,7 @@
       class:picker={tools.active === "color-picker" ||
         SELECTION_TOOLS.includes(tools.active) ||
         PAINT_TOOLS.includes(tools.active)}
+      class:brush={documents.active !== undefined && paintTools.showsOutline(tools.active)}
       class:mover={tools.active === "move"}
       class:guide-row={guideHover === "row"}
       class:guide-col={guideHover === "col"}
@@ -807,6 +831,10 @@
   }
   canvas.picker {
     cursor: crosshair;
+  }
+  /* The brush outline is the pointer. */
+  canvas.brush {
+    cursor: none;
   }
   /* After the tool cursors: over a guide every tool can drag it. */
   canvas.guide-row {
