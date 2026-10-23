@@ -20,7 +20,7 @@ const ICONS = [
   "note_add", "open_with", "redo", "remove", "rotate_right", "save", "save_as", "select", "swap_vert",
   "text_fields", "tune", "undo", "visibility", "visibility_off", "zoom_in",
   "zoom_out", "approval", "pan_tool_alt", "water_drop", "tonality", "info", "favorite", "format_color_reset", "border_outer",
-  "alt_route", "cached", "view_apps", "preview", "wand_shine", "ink_selection",
+  "alt_route", "cached", "view_apps", "preview", "wand_shine", "ink_selection", "license",
 ];
 
 const require = createRequire(import.meta.url);

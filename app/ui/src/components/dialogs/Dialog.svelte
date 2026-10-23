@@ -32,6 +32,9 @@
     first?.focus();
     if (first instanceof HTMLInputElement && first.type !== "checkbox") first.select();
     const onKey = (e: KeyboardEvent) => {
+      // Stacked dialogs (About > Licenses): only the top one (last in the DOM) cancels.
+      const open = document.querySelectorAll('[role="dialog"]');
+      if (open[open.length - 1] !== panel) return;
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();

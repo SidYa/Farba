@@ -231,21 +231,36 @@ async fn render_text(
 /// address is fixed here, so the page cannot open arbitrary URLs.
 #[tauri::command]
 fn open_donate() -> Result<(), String> {
+    open_in_browser(DONATE_URL)
+}
+
+const DONATE_URL: &str =
+    "https://www.paypal.com/donate/?business=sergiisidko%40gmail.com&currency_code=USD";
+
+/// Opens a project's web page from About > Licenses in the default browser. Only http(s)
+/// addresses are accepted, so the page cannot start programs or open local files.
+#[tauri::command]
+fn open_url(url: String) -> Result<(), String> {
+    let web = url.starts_with("https://") || url.starts_with("http://");
+    if !web || url.chars().any(|c| c.is_whitespace() || c == '"') {
+        return Err("Not a web address".into());
+    }
+    open_in_browser(&url)
+}
+
+fn open_in_browser(url: &str) -> Result<(), String> {
     // `explorer <url>` opened the Documents folder instead (the `&` / `?` in the address);
     // the URL protocol handler always hands it to the default browser.
     #[cfg(windows)]
     let mut command = std::process::Command::new("rundll32");
     #[cfg(windows)]
-    command.args(["url.dll,FileProtocolHandler", DONATE_URL]);
+    command.args(["url.dll,FileProtocolHandler", url]);
     #[cfg(not(windows))]
     let mut command = std::process::Command::new("xdg-open");
     #[cfg(not(windows))]
-    command.arg(DONATE_URL);
+    command.arg(url);
     command.spawn().map(drop).map_err(|e| e.to_string())
 }
-
-const DONATE_URL: &str =
-    "https://www.paypal.com/donate/?business=sergiisidko%40gmail.com&currency_code=USD";
 
 /// Opens the Microsoft Store page of a Windows codec extension (a missing HEIF / HEVC / RAW
 /// codec). Only these product ids are accepted.
@@ -384,6 +399,7 @@ pub fn run() {
             svg_size,
             open_store,
             open_donate,
+            open_url,
             startup_files,
             startup_mark,
             #[cfg(not(windows))]

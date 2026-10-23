@@ -1,13 +1,15 @@
 <script lang="ts">
   // Main menu > About Farba: logo, version, author and a PayPal donation button (owner
   // request 2026-10-14). The backend opens the fixed PayPal page in the default browser
-  // (`open_donate`); the address is not shown (owner request).
+  // (`open_donate`); the address is not shown (owner request). Licenses opens the
+  // third-party notices on top of this dialog.
   import { getVersion } from "@tauri-apps/api/app";
   import { invoke } from "@tauri-apps/api/core";
   import Dialog from "./Dialog.svelte";
   import Icon from "../Icon.svelte";
+  import LicensesDialog from "./LicensesDialog.svelte";
   import logo from "../../../../src-tauri/icons/128x128@2x.png";
-  import type { DialogProps } from "../../lib/dialogs.svelte";
+  import { openDialog, type DialogProps } from "../../lib/dialogs.svelte";
 
   let { close }: DialogProps<void> = $props();
 
@@ -34,10 +36,14 @@
     <p>I will be grateful for any donation.</p>
   </div>
   {#snippet buttons()}
-    <!-- Donate on the left of the button row, Close on the right (owner request). -->
+    <!-- PayPal on the left of the button row, Licenses and Close on the right (owner request). -->
     <button type="button" class="paypal" onclick={() => void invoke("open_donate")}>
       <Icon name="favorite" size={16} />
-      Donate with PayPal
+      PayPal
+    </button>
+    <button type="button" class="with-icon" onclick={() => void openDialog(LicensesDialog, {})}>
+      <Icon name="license" size={16} />
+      Licenses
     </button>
     <button type="submit" class="primary">Close</button>
   {/snippet}
@@ -77,6 +83,12 @@
     border-radius: var(--radius);
     background: var(--accent);
     color: var(--accent-fg);
+    cursor: pointer;
+  }
+  .with-icon {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
     cursor: pointer;
   }
 </style>

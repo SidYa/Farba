@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm wasm && vite build",
+    "build": "pnpm wasm && node scripts/gen-licenses.mjs && vite build",
     "preview": "vite preview",
     "wasm": "wasm-pack build ../core/farba-wasm --target web --out-dir ../../app/ui/src/lib/wasm/pkg --out-name farba_wasm --no-pack",
     "wasm:dev": "wasm-pack build ../core/farba-wasm --dev --target web --out-dir ../../app/ui/src/lib/wasm/pkg --out-name farba_wasm --no-pack",
@@ -15,6 +15,7 @@
     "lint": "prettier --check \"ui/**/*.{ts,svelte,css,html}\"",
     "tauri": "tauri",
     "icons": "node scripts/gen-icons.mjs",
+    "licenses": "node scripts/gen-licenses.mjs",
     "addons": "node scripts/build-addons.mjs",
     "heif-libs": "node scripts/build-heif-libs.mjs",
     "installer": "pnpm addons && tauri build"
