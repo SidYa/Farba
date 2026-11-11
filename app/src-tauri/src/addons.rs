@@ -602,7 +602,9 @@ pub fn addon_open_folder(path: String) -> Result<(), String> {
     fs::create_dir_all(&p).map_err(|e| e.to_string())?;
     #[cfg(windows)]
     let opener = "explorer";
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    let opener = "open";
+    #[cfg(not(any(windows, target_os = "macos")))]
     let opener = "xdg-open";
     std::process::Command::new(opener)
         .arg(&p)

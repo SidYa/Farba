@@ -7,6 +7,7 @@
 #   build-linux.sh --addons  only the add-ons' Linux libraries (core/target/addons/linux);
 #                            `pnpm addons` on Windows runs this in WSL and packs them with
 #                            the Windows DLLs into one package
+#   build-linux.sh --app     only the .deb and .rpm (the CI build, .github/workflows)
 set -euo pipefail
 
 # The newest glibc / libstdc++ the binaries may need: Ubuntu 22.04 has glibc 2.35,
@@ -16,7 +17,9 @@ glibc_max=2.35
 glibcxx_max=3.4.30
 
 addons_only=""
+app_only=""
 [ "${1:-}" = "--addons" ] && addons_only=1
+[ "${1:-}" = "--app" ] && app_only=1
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
@@ -44,8 +47,10 @@ if [ -z "$addons_only" ]; then
   pnpm tauri build
   bins+=("$root/core/target/release/farba")
 fi
-pnpm addons
-bins+=("$root"/core/target/addons/linux/*.so)
+if [ -z "$app_only" ]; then
+  pnpm addons
+  bins+=("$root"/core/target/addons/linux/*.so)
+fi
 
 # Symbols of $1 that need a newer $2 (GLIBC / GLIBCXX) than $3; weak ones are optional.
 too_new() {
@@ -70,4 +75,5 @@ if [ -n "$failed" ]; then
 fi
 
 [ -z "$addons_only" ] && ls -lh "$root"/core/target/release/bundle/{deb/*.deb,rpm/*.rpm}
-ls -lh "$root"/core/target/addons/linux/
+[ -z "$app_only" ] && ls -lh "$root"/core/target/addons/linux/
+exit 0

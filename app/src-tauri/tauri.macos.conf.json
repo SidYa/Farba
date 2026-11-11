@@ -1,0 +1,15 @@
+{
+  "bundle": {
+    "targets": ["dmg"],
+    "category": "public.app-category.graphics-design",
+    "longDescription": "A fast, lightweight raster image editor.",
+    "resources": {
+      "../../core/target/pdfium/lib/libpdfium.dylib": "libpdfium.dylib",
+      "../../core/target/pdfium/LICENSE": "licenses/pdfium-binaries.txt",
+      "../../core/target/pdfium/licenses/": "licenses/pdfium/"
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    }
+  }
+}
