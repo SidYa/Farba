@@ -25,7 +25,7 @@ jobs:
     name: Linux (.deb, .rpm)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: System libraries
         run: |
@@ -46,7 +46,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           package_json_file: app/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -55,7 +55,7 @@ jobs:
       - name: Build
         run: bash app/build-linux.sh --app
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: farba-linux
           path: |
@@ -86,13 +86,14 @@ jobs:
           - arch: x64
             target: x86_64-apple-darwin
     env:
-      # gen-licenses.mjs lists the crates of the target being built.
-      CARGO_BUILD_TARGET: ${{ matrix.target }}
+      # gen-licenses.mjs lists the crates of the target being built (not CARGO_BUILD_TARGET:
+      # it would also redirect the WASM build).
+      FARBA_LICENSES_TARGET: ${{ matrix.target }}
       # PDFium (PDF import), prebuilt by bblanchon/pdfium-binaries: the version of the
       # pdfium-render feature in core/farba-io/Cargo.toml (same as app/build-linux.sh).
       PDFIUM_VERSION: "7881"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # The x86 assembly of rav1d (the AVIF decoder) for the Intel build.
       - name: NASM
@@ -112,7 +113,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           package_json_file: app/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -132,7 +133,7 @@ jobs:
           # and the UI.
           pnpm tauri build --target ${{ matrix.target }} --bundles dmg
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: farba-macos-${{ matrix.arch }}
           path: core/target/${{ matrix.target }}/release/bundle/dmg/*.dmg

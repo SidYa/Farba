@@ -6,7 +6,8 @@
 //   bundled  native libraries shipped next to the app or inside an add-on
 //   asset    icons and other artwork
 //   rust     crates compiled into the app, the WASM module and the add-ons for the build
-//            target (CARGO_BUILD_TARGET, else this OS: Windows MSVC / Linux GNU)
+//            target (FARBA_LICENSES_TARGET or CARGO_BUILD_TARGET, else this OS: Windows
+//            MSVC / Linux GNU / macOS)
 //   js       npm packages bundled into the UI (production deps + the Svelte runtime)
 //
 // Run: pnpm licenses (also runs as part of `pnpm build`)
@@ -58,9 +59,16 @@ function rustCrates() {
   const home =
     process.env.CARGO_HOME ?? join(process.env.USERPROFILE ?? process.env.HOME ?? "", ".cargo");
   const cargo = existsSync(join(home, "bin", "cargo.exe")) ? join(home, "bin", "cargo.exe") : "cargo";
+  // FARBA_LICENSES_TARGET: the CI's cross builds (CARGO_BUILD_TARGET would also redirect
+  // the WASM build, whose wasm-pack then finds no .wasm file).
+  const host = {
+    win32: "x86_64-pc-windows-msvc",
+    darwin: process.arch === "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin",
+  }[process.platform];
   const triple =
-    process.env.CARGO_BUILD_TARGET ??
-    (process.platform === "win32" ? "x86_64-pc-windows-msvc" : "x86_64-unknown-linux-gnu");
+    process.env.FARBA_LICENSES_TARGET ||
+    process.env.CARGO_BUILD_TARGET ||
+    (host ?? "x86_64-unknown-linux-gnu");
   const raw = execFileSync(
     cargo,
     ["metadata", "--format-version", "1", "--filter-platform", triple],
