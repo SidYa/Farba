@@ -2,6 +2,7 @@
 // (transparency: canvasprefs, rulers: guides, toolbox grouping: tools). Each one is applied
 // at once and remembered.
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import type { IconSet } from "./icons";
 import { loadSetting, saveSetting } from "./settings";
 import { theme } from "./theme.svelte";
 
@@ -29,6 +30,8 @@ export const UNDO_DEFAULT = { megabytes: 512, steps: 200 };
 
 class Prefs {
   accent = $state<Accent>(loadSetting("accent", "blue"));
+  /** Icons: Farba's own with the accent colour, own in one colour, or Material Symbols. */
+  iconSet = $state<IconSet>(loadSetting("icon-set", "accent"));
   uiScale = $state<number>(loadSetting("ui-scale", 1));
   /** Colour around the image, `#rrggbb`, or null for the theme's. */
   canvasBack = $state<string | null>(loadSetting<string | null>("canvas-back", null));
@@ -67,6 +70,9 @@ class Prefs {
         `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${dark ? 0.28 : 0.2})`,
       );
     }
+    // The accent details of the icons (Icon.svelte); unset: drawn like the rest.
+    if (this.iconSet === "accent") root.setProperty("--icon-accent", "var(--accent)");
+    else root.removeProperty("--icon-accent");
     if (this.canvasBack) root.setProperty("--bg-canvas", this.canvasBack);
     else root.removeProperty("--bg-canvas");
   }
@@ -83,6 +89,7 @@ type PrefValues = Omit<Prefs, "set" | "applyColors" | "applyScale">;
 
 const SETTING_KEYS: Record<keyof PrefValues, string> = {
   accent: "accent",
+  iconSet: "icon-set",
   uiScale: "ui-scale",
   canvasBack: "canvas-back",
   openZoom: "open-zoom",

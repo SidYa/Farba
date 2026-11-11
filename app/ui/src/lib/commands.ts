@@ -630,7 +630,7 @@ export function registerCommands() {
       // The Pencil is a mode of the Paintbrush (owner request 2026-11-11); N keeps GIMP's key.
       id: "tool-pencil",
       label: "Pencil",
-      icon: "edit",
+      icon: "tool_pencil",
       keys: ["N"],
       run: () => {
         tools.select("paintbrush");

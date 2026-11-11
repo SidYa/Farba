@@ -142,7 +142,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "move",
     name: "Move",
-    icon: "open_with",
+    icon: "tool_move",
     keys: ["M"],
     help: "Move layers and selections (arrows: 1 px, Shift+arrows: more)",
     options: [
@@ -162,7 +162,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "rect-select",
     name: "Rectangle Select",
-    icon: "ink_selection",
+    icon: "tool_rect_select",
     keys: ["R"],
     help: "Select a rectangular region",
     options: [
@@ -181,7 +181,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "ellipse-select",
     name: "Ellipse Select",
-    icon: "lasso_select",
+    icon: "tool_ellipse_select",
     keys: ["E"],
     help: "Select an elliptical region",
     options: selectionCommon,
@@ -189,7 +189,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "free-select",
     name: "Free Select",
-    icon: "alt_route",
+    icon: "tool_free_select",
     keys: ["F"],
     help: "Select a hand-drawn region with free and polygonal segments",
     options: selectionCommon,
@@ -197,7 +197,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "fuzzy-select",
     name: "Fuzzy Select",
-    icon: "wand_shine",
+    icon: "tool_fuzzy_select",
     keys: ["U"],
     help: "Select a contiguous region on the basis of colour",
     options: [...selectionCommon, ...thresholdOptions],
@@ -205,7 +205,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "by-color-select",
     name: "Select by Color",
-    icon: "border_outer", // owner choice 2026-10-14
+    icon: "tool_color_select",
     keys: ["Shift+O"],
     help: "Select regions with similar colours",
     options: [...selectionCommon, ...thresholdOptions],
@@ -213,7 +213,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "rotate",
     name: "Rotate",
-    icon: "rotate_right",
+    icon: "tool_rotate",
     keys: ["Shift+R"],
     help: "Rotate the layer or selection (drag the centre to move it; Ctrl: 15° steps). Enter applies",
     options: [interpolation],
@@ -221,7 +221,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "scale",
     name: "Scale",
-    icon: "open_in_full",
+    icon: "tool_scale",
     keys: ["Shift+S"],
     help: "Scale the layer or selection (Shift: keep the aspect ratio; Ctrl: from the centre). Enter applies",
     options: [
@@ -232,7 +232,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "flip",
     name: "Flip",
-    icon: "flip",
+    icon: "tool_flip",
     keys: ["Shift+F"],
     help: "Reverse the layer or selection horizontally or vertically (Ctrl toggles)",
     options: [
@@ -251,7 +251,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "transform-3d",
     name: "3D Transform",
-    icon: "3d_rotation",
+    icon: "tool_transform_3d",
     keys: ["Shift+W"],
     help: "Rotate the layer or selection in 3D (drag; Shift: one axis; Ctrl: around Z). Enter applies",
     options: [
@@ -270,7 +270,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "handle-transform",
     name: "Handle Transform",
-    icon: "transform",
+    icon: "tool_handle_transform",
     keys: ["Shift+L"],
     help: "Deform with up to 4 handles: click adds one, drag moves it (Shift: move only the handle; Ctrl+click: remove). Enter applies",
     options: [interpolation],
@@ -278,7 +278,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "bucket-fill",
     name: "Bucket Fill",
-    icon: "format_color_fill",
+    icon: "tool_bucket",
     keys: ["Shift+B"],
     help: "Fill selected area with a colour (Shift: toggle the affected area; Ctrl or Alt: pick a colour)",
     options: [
@@ -311,7 +311,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "gradient",
     name: "Gradient",
-    icon: "gradient",
+    icon: "tool_gradient",
     keys: ["G"],
     help: "Fill with a colour gradient (Ctrl while dragging: snap the angle; Ctrl or Alt: pick a colour)",
     options: [
@@ -353,7 +353,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "paintbrush",
     name: "Paintbrush",
-    icon: "brush",
+    icon: "tool_brush",
     keys: ["P"],
     help: "Paint strokes: smooth (Brush mode) or hard edged pixels (Pencil mode). Shift+click: straight line; Ctrl or Alt: pick a colour",
     options: [
@@ -363,8 +363,8 @@ export const TOOLS: ToolDef[] = [
         label: "Mode",
         default: "brush",
         choices: [
-          ["brush", "Brush: smooth strokes", "brush"],
-          ["pencil", "Pencil: hard edged pixels (N)", "edit"],
+          ["brush", "Brush: smooth strokes", "tool_brush"],
+          ["pencil", "Pencil: hard edged pixels (N)", "tool_pencil"],
         ],
       },
       brushSize,
@@ -385,7 +385,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "eraser",
     name: "Eraser",
-    icon: "ink_eraser",
+    icon: "tool_eraser",
     keys: ["Shift+E"],
     help: "Erase to transparency (Shift+click: straight line; Ctrl or Alt: pick a colour)",
     options: [
@@ -398,7 +398,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "clone",
     name: "Clone",
-    icon: "approval",
+    icon: "tool_clone",
     keys: ["C"],
     help: "Paint with pixels from another place (Ctrl+click: set the source; Alt: pick a colour)",
     options: [brushSize, hardness, opacity, cloneAlignment, sampleMergedSource],
@@ -406,7 +406,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "heal",
     name: "Heal",
-    icon: "healing",
+    icon: "tool_heal",
     keys: ["H"],
     help: "Remove spots: clone that blends into the surroundings (Ctrl+click: set the source; Alt: pick a colour)",
     options: [brushSize, hardness, opacity, cloneAlignment, sampleMergedSource],
@@ -414,7 +414,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "smudge",
     name: "Smudge",
-    icon: "pan_tool_alt",
+    icon: "tool_smudge",
     keys: ["S"],
     help: "Smear the pixels along the stroke (Ctrl or Alt: pick a colour)",
     options: [
@@ -428,7 +428,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "blur-sharpen",
     name: "Blur / Sharpen",
-    icon: "water_drop",
+    icon: "tool_blur",
     keys: ["Shift+U"],
     help: "Blur or sharpen with a brush (Ctrl: the other mode; Alt: pick a colour)",
     options: [
@@ -451,7 +451,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "dodge-burn",
     name: "Dodge / Burn",
-    icon: "tonality",
+    icon: "tool_dodge",
     keys: ["Shift+D"],
     help: "Lighten (dodge) or darken (burn) with a brush (Ctrl: the other mode; Alt: pick a colour)",
     options: [
@@ -485,7 +485,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "text",
     name: "Text",
-    icon: "text_fields",
+    icon: "tool_text",
     keys: ["T"],
     help: "Click to type (drag: a fixed box), click a text layer to edit it. Escape ends",
     options: [
@@ -554,7 +554,7 @@ export const TOOLS: ToolDef[] = [
   {
     id: "color-picker",
     name: "Color Picker",
-    icon: "colorize",
+    icon: "tool_picker",
     keys: ["O"],
     help: "Set colours from image pixels as seen (left click: FG, right click: BG)",
     options: [
@@ -623,7 +623,7 @@ class Tools {
   active = $state<string>(validTool(loadSetting("active-tool", "paintbrush")));
   /** The Paintbrush icon follows its mode (the Pencil is a mode of it now). */
   icon(id: string): string {
-    if (id === "paintbrush" && this.values.paintbrush?.mode === "pencil") return "edit";
+    if (id === "paintbrush" && this.values.paintbrush?.mode === "pencil") return "tool_pencil";
     return toolDef(id).icon;
   }
   values = $state(shareSize(mergeSaved(defaults(), loadSetting("tool-options", {})), this.active));

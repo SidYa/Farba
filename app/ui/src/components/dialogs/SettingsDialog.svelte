@@ -5,6 +5,7 @@
   // the Addons Manager.
   import Dialog from "./Dialog.svelte";
   import Icon from "../Icon.svelte";
+  import type { IconSet } from "../../lib/icons";
   import Slider from "../Slider.svelte";
   import Switch from "../Switch.svelte";
   import type { DialogProps } from "../../lib/dialogs.svelte";
@@ -31,12 +32,18 @@
 
   let { close }: DialogProps<boolean> = $props();
 
+  const ICON_SETS: [IconSet, string][] = [
+    ["accent", "Accent"],
+    ["plain", "Plain"],
+    ["material", "Material"],
+  ];
+
   const SECTIONS = [
     { id: "appearance", label: "Appearance", icon: "palette" },
     { id: "canvas", label: "Canvas", icon: "aspect_ratio" },
     { id: "files", label: "Files", icon: "save" },
     { id: "behaviour", label: "Behaviour", icon: "tune" },
-    { id: "toolbox", label: "Toolbox", icon: "brush" },
+    { id: "toolbox", label: "Toolbox", icon: "tool_brush" },
   ] as const;
   type Section = (typeof SECTIONS)[number]["id"];
 
@@ -128,6 +135,28 @@
                 style:--c={theme.effective === "dark" ? dark : light}
                 onclick={() => prefs.set("accent", id as Accent)}
               ></button>
+            {/each}
+          </div>
+        </div>
+        <div class="item">
+          <div class="text">
+            <div class="name">Icons</div>
+            <div class="hint">
+              Farba's own outline icons, with or without the accent colour, or Material Symbols.
+            </div>
+          </div>
+          <div class="segmented" role="radiogroup" aria-label="Icons">
+            {#each ICON_SETS as [id, label] (id)}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={prefs.iconSet === id}
+                class:on={prefs.iconSet === id}
+                onclick={() => prefs.set("iconSet", id)}
+              >
+                <Icon name="tool_brush" size={16} set={id} />
+                {label}
+              </button>
             {/each}
           </div>
         </div>

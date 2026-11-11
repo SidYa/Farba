@@ -12,10 +12,10 @@
     $props();
 
   const MODES: [string, string, string][] = [
-    ["replace", "Replace the current selection", "select"],
-    ["add", "Add to the current selection (Shift)", "add"],
-    ["subtract", "Subtract from the current selection (Ctrl)", "remove"],
-    ["intersect", "Intersect with the current selection (Shift+Ctrl)", "close_small"],
+    ["replace", "Replace the current selection", "mode_replace"],
+    ["add", "Add to the current selection (Shift)", "mode_add"],
+    ["subtract", "Subtract from the current selection (Ctrl)", "mode_subtract"],
+    ["intersect", "Intersect with the current selection (Shift+Ctrl)", "mode_intersect"],
   ];
 
   let el: HTMLElement;
