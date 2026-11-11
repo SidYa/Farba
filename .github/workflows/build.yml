@@ -29,9 +29,10 @@ jobs:
 
       - name: System libraries
         run: |
+          # nasm: the x86 assembly of rav1d (the AVIF decoder).
           sudo apt-get update
           sudo apt-get install -y build-essential curl file pkg-config libssl-dev \
-            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev rpm
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev rpm nasm
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -90,6 +91,11 @@ jobs:
       PDFIUM_VERSION: "7881"
     steps:
       - uses: actions/checkout@v4
+
+      # The x86 assembly of rav1d (the AVIF decoder) for the Intel build.
+      - name: NASM
+        if: matrix.arch == 'x64'
+        run: brew install nasm
 
       - uses: dtolnay/rust-toolchain@stable
         with:
