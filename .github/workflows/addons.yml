@@ -1,0 +1,146 @@
+# Builds the AI Background Removal add-on as one package for all three systems:
+# add-ai-backrem.fba holds the Windows DLL (+ DirectML), the Linux .so and the macOS .dylib
+# (Apple Silicon + Intel in one file when both build), and Farba loads the one for its
+# system (addon.json `platforms`). Run it by hand (Actions > Add-ons > Run workflow): the
+# package is the run's artifact. On a version tag (v1.1.0...) or an add-on tag
+# (addons-...) it is also attached to a draft release of that tag.
+#
+# The HEIC add-on is Windows only and stays a local build (`pnpm heif-libs`, `pnpm addons`).
+name: Add-ons
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*", "addons-*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: addons-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows (.dll)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+      - name: Build
+        working-directory: core
+        run: cargo build --release -p farba-ai
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ai-windows
+          path: |
+            core/target/release/farba_ai.dll
+            core/target/release/DirectML.dll
+          if-no-files-found: error
+
+  linux:
+    name: Linux (.so)
+    # The oldest glibc the library may need (see app/build-linux.sh).
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libssl-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: app/package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      # Builds libfarba_ai.so into core/target/addons/linux and checks its glibc needs.
+      - name: Build
+        run: bash app/build-linux.sh --addons
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ai-linux
+          path: core/target/addons/linux/libfarba_ai.so
+          if-no-files-found: error
+
+  macos:
+    name: macOS (.dylib)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+      - name: Build
+        working-directory: core
+        run: |
+          set -euo pipefail
+          export MACOSX_DEPLOYMENT_TARGET=11.0
+          cargo build --release -p farba-ai --target aarch64-apple-darwin
+          libs=(target/aarch64-apple-darwin/release/libfarba_ai.dylib)
+          # Intel Macs too, when ONNX Runtime has a build for them; otherwise Apple Silicon
+          # only (the add-on then does not load on an Intel Mac).
+          if cargo build --release -p farba-ai --target x86_64-apple-darwin; then
+            libs+=(target/x86_64-apple-darwin/release/libfarba_ai.dylib)
+          else
+            echo "::warning::No Intel build of the add-on (ONNX Runtime): Apple Silicon only"
+          fi
+          mkdir -p out
+          lipo -create "${libs[@]}" -output out/libfarba_ai.dylib
+          lipo -info out/libfarba_ai.dylib
+          # ONNX Runtime must be inside the library (nothing else is shipped).
+          otool -L out/libfarba_ai.dylib
+          if otool -L out/libfarba_ai.dylib | grep -q onnxruntime; then
+            echo "::error::libfarba_ai.dylib needs a separate ONNX Runtime library"
+            exit 1
+          fi
+          # Unsigned code does not load on Apple Silicon: an ad-hoc signature.
+          codesign --force --sign - out/libfarba_ai.dylib
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ai-macos
+          path: core/out/libfarba_ai.dylib
+          if-no-files-found: error
+
+  package:
+    name: Package (.fba)
+    needs: [windows, linux, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          path: libs
+          merge-multiple: true
+      # Same contents as app/scripts/build-addons.mjs: addon.json, the libraries, Farba's
+      # licence (the libraries contain farba-core, GPL) and the third-party notices.
+      - name: Pack
+        run: |
+          set -euo pipefail
+          mkdir -p stage out
+          cp core/farba-ai/addon.json libs/* LICENSE THIRD-PARTY-NOTICES.md stage/
+          mv stage/LICENSE stage/LICENSE.txt
+          ls -l stage
+          (cd stage && zip -9 ../out/add-ai-backrem.fba *)
+          unzip -l out/add-ai-backrem.fba
+      - uses: actions/upload-artifact@v5
+        with:
+          name: add-ai-backrem
+          path: out/add-ai-backrem.fba
+          if-no-files-found: error
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: out/add-ai-backrem.fba

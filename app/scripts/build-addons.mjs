@@ -112,6 +112,9 @@ for (const a of ADDONS) {
       copyFileSync(join(linuxLibs, f), join(stage, f));
       files.push(f);
     }
+    // Only the systems packed here: the macOS library is built on a Mac (the CI's
+    // .github/workflows/addons.yml packs all three).
+    manifest.platforms = { linux };
   } else {
     delete manifest.platforms;
   }
