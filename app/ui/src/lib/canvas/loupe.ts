@@ -1,19 +1,17 @@
 // The Color Picker loupe (owner request 2026-11-11): a round lens centred on the pointer
 // with the image pixels around it magnified, the pixel under the pointer framed in the
 // middle. Its ring shows the colour under the pointer (upper half) next to the colour it
-// would replace (lower half), and a softly pulsing outline tells that picking is on (also
-// with Ctrl / Alt held in a painting tool). It samples what is seen: the visible layers
-// composited, whatever layer is active. Drawn on the Viewport's overlay canvas.
+// would replace (lower half); it is also shown with Ctrl / Alt held in a painting tool. It
+// samples what is seen: the visible layers composited, whatever layer is active. Drawn on
+// the Viewport's overlay canvas (no animation: the owner found the pulsing outline too much).
 import type { Doc } from "../documents.svelte";
 import type { Rgba } from "../palette.svelte";
 
 /** Lens radius and ring width, CSS pixels. */
-const RADIUS = 62;
+const RADIUS = 50;
 const RING = 7;
 /** Pixels across the lens (odd: the picked one is in the middle). */
-const CELLS = 15;
-/** Pulse period of the outline, ms. */
-const PULSE_MS = 1400;
+const CELLS = 13;
 
 type Pixel = [number, number, number, number] | undefined;
 
@@ -79,8 +77,6 @@ export function drawLoupe(
   iy: number,
   current: Rgba,
   outside: string,
-  accent: string,
-  now: number,
 ) {
   const dpr = devicePixelRatio;
   const r = RADIUS * dpr;
@@ -185,23 +181,6 @@ export function drawLoupe(
   ctx.beginPath();
   ctx.arc(sx, sy, r + ring, 0, Math.PI * 2);
   ctx.stroke();
-
-  // Pulsing outline: grows and fades out, then starts again.
-  const t = (now % PULSE_MS) / PULSE_MS;
-  const ease = 1 - Math.pow(1 - t, 2);
-  ctx.beginPath();
-  ctx.arc(sx, sy, r + ring + (1.5 + ease * 6) * dpr, 0, Math.PI * 2);
-  ctx.lineWidth = 2 * dpr;
-  ctx.strokeStyle = accent;
-  ctx.globalAlpha = 0.9 * (1 - t);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-  ctx.beginPath();
-  ctx.arc(sx, sy, r + ring + 1.5 * dpr, 0, Math.PI * 2);
-  ctx.lineWidth = 1.5 * dpr;
-  ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t * Math.PI * 2);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
 
   // Hex value under the lens.
   if (picked) {

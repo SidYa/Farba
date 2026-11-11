@@ -29,6 +29,12 @@
       .map((v) => v.toString(16).padStart(2, "0"))
       .join("");
 
+  /** `#rrggbb` of the colour input as an opaque RGBA. */
+  function rgb(h: string): [number, number, number, number] {
+    const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    return [c[0]!, c[1]!, c[2]!, 255];
+  }
+
   function apply(patch: SpanStyle) {
     textTool.style(patch);
     textTool.focus();
@@ -80,11 +86,12 @@
     type="color"
     title="Colour of the selected text"
     value={hex(color)}
-    onchange={(e) => {
-      const h = e.currentTarget.value;
-      const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-      apply({ color: [c[0]!, c[1]!, c[2]!, 255] });
+    oninput={(e) => {
+      // Live while the colour is being chosen; the keyboard stays with the colour picker
+      // (taking it back would close the picker).
+      textTool.style({ color: rgb(e.currentTarget.value) });
     }}
+    onchange={(e) => apply({ color: rgb(e.currentTarget.value) })}
   />
   <span class="sep"></span>
   <button class:on={bold} title="Bold (Ctrl+B)" onclick={() => apply({ bold: !bold })}>

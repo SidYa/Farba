@@ -14,7 +14,9 @@
   import { guidePrefs } from "../../lib/guides.svelte";
   import { numberField } from "../../lib/numberfield";
   import {
+    ACCENT_ROWS,
     ACCENTS,
+    accentFor,
     prefs,
     UI_SCALES,
     UNDO_DEFAULT,
@@ -31,6 +33,15 @@
   } from "../../lib/canvasprefs.svelte";
 
   let { close }: DialogProps<boolean> = $props();
+
+  /** Tooltip of the custom accent swatch: says when the colour is adapted to the theme. */
+  let customTitle = $derived.by(() => {
+    const dark = theme.effective === "dark";
+    const used = accentFor(prefs.customAccent, dark);
+    return used === prefs.customAccent
+      ? "Custom colour…"
+      : `Custom colour… (${prefs.customAccent}, made ${dark ? "lighter" : "darker"} to stand out on the ${dark ? "dark" : "light"} theme)`;
+  });
 
   const ICON_SETS: [IconSet, string][] = [
     ["accent", "Accent"],
@@ -123,18 +134,41 @@
             <div class="hint">Selected buttons, switches, sliders and highlights.</div>
           </div>
           <div class="swatches" role="radiogroup" aria-label="Accent colour">
-            {#each Object.entries(ACCENTS) as [id, [dark, light]] (id)}
-              <button
-                type="button"
-                role="radio"
-                class="swatch"
-                class:on={prefs.accent === id}
-                aria-checked={prefs.accent === id}
-                aria-label={id}
-                title={id[0]!.toUpperCase() + id.slice(1)}
-                style:--c={theme.effective === "dark" ? dark : light}
-                onclick={() => prefs.set("accent", id as Accent)}
-              ></button>
+            {#each ACCENT_ROWS.flat() as id (id)}
+              {#if id === "custom"}
+                <!-- Own colour: opens the colour chooser; shown as used on this theme. -->
+                <label
+                  class="swatch custom"
+                  class:on={prefs.accent === "custom"}
+                  class:chosen={prefs.accent === "custom"}
+                  title={customTitle}
+                  style:--c={accentFor(prefs.customAccent, theme.effective === "dark")}
+                >
+                  <input
+                    type="color"
+                    value={prefs.customAccent}
+                    aria-label="Custom accent colour"
+                    onclick={() => prefs.set("accent", "custom")}
+                    oninput={(e) => {
+                      prefs.set("customAccent", e.currentTarget.value);
+                      prefs.set("accent", "custom");
+                    }}
+                  />
+                </label>
+              {:else}
+                {@const [dark, light] = ACCENTS[id]}
+                <button
+                  type="button"
+                  role="radio"
+                  class="swatch"
+                  class:on={prefs.accent === id}
+                  aria-checked={prefs.accent === id}
+                  aria-label={id}
+                  title={id[0]!.toUpperCase() + id.slice(1)}
+                  style:--c={theme.effective === "dark" ? dark : light}
+                  onclick={() => prefs.set("accent", id as Accent)}
+                ></button>
+              {/if}
             {/each}
           </div>
         </div>
@@ -561,7 +595,8 @@
     color: var(--accent-fg);
   }
   .swatches {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: repeat(6, 20px);
     flex: none;
     gap: 8px;
   }
@@ -578,6 +613,41 @@
   }
   .swatch.on {
     outline-color: var(--c);
+  }
+  /* Custom colour: a colour wheel until one is chosen, then that colour with a small mark. */
+  .swatch.custom {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: conic-gradient(
+      #ef5350,
+      #f2b632,
+      #a5c94b,
+      #2bb3a3,
+      #4b9be8,
+      #a77be8,
+      #e8607a,
+      #ef5350
+    );
+  }
+  .swatch.custom.chosen {
+    background: var(--c);
+  }
+  .swatch.custom.chosen::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: conic-gradient(#ef5350, #f2b632, #a5c94b, #4b9be8, #a77be8, #ef5350);
+    pointer-events: none;
+  }
+  .swatch.custom input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
   }
   .small {
     height: 24px;

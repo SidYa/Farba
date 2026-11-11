@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fontFamilies } from "./lib/text/render";
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -40,6 +41,9 @@
     // Pre-grow the WASM heap while idle so the first image open does not pay for it.
     const idle = window.requestIdleCallback ?? ((f: () => void) => setTimeout(f, 200));
     idle(() => void loadCore().then(() => warm_up_heap(256)));
+    // The text engine loads every system font on first use (about a second): do it now,
+    // so the first font list or text layer does not wait for it.
+    idle(() => void fontFamilies());
   }
 
   onMount(() => {

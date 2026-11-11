@@ -100,6 +100,16 @@
         break;
       }
     }
+    // Past the first or the last row (the empty space below the list, or above it): the
+    // layers go to the top or the bottom of the stack, and the line shows it.
+    if (!drop && rows.length) {
+      const first = rows[0]!.id;
+      const last = rows[rows.length - 1]!.id;
+      const top = rowEls.get(first)?.getBoundingClientRect();
+      const bottom = rowEls.get(last)?.getBoundingClientRect();
+      if (top && e.clientY < top.top) drop = { id: first, above: true };
+      else if (bottom && e.clientY >= bottom.bottom) drop = { id: last, above: false };
+    }
   }
 
   function onListUp() {

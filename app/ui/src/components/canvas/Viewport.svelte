@@ -33,12 +33,7 @@
   import { adjustToolOption } from "../../lib/commands";
   import { confirmRasterize, rasterAllowed } from "../../lib/textguard";
   import { moveTool } from "../../lib/canvas/movetool.svelte";
-  import {
-    ALT_PICK_TOOLS,
-    PAINT_TOOLS,
-    paintTools,
-    pickModifier,
-  } from "../../lib/canvas/painttools.svelte";
+  import { ALT_PICK_TOOLS, PAINT_TOOLS, paintTools } from "../../lib/canvas/painttools.svelte";
   import { drawLoupe } from "../../lib/canvas/loupe";
   import { SELECTION_TOOLS, selectTools } from "../../lib/canvas/selecttools.svelte";
   import { documents, onDocumentClosed, type Doc } from "../../lib/documents.svelte";
@@ -298,23 +293,11 @@
         `rgb(${cssColor(name)
           .map((c) => Math.round(c * 255))
           .join(",")})`;
-      drawLoupe(
-        overlay,
-        doc,
-        hover.sx,
-        hover.sy,
-        hover.ix,
-        hover.iy,
-        current,
-        rgb("--bg-canvas"),
-        rgb("--accent"),
-        performance.now(),
-      );
-      // The outline pulses: redraw the overlay (only) on the next frame.
-      requestOverlay();
+      drawLoupe(overlay, doc, hover.sx, hover.sy, hover.ix, hover.iy, current, rgb("--bg-canvas"));
     }
   }
 
+  /** Redraws the overlay only (the loupe follows the pointer), not the image. */
   let overlayQueued = false;
   function requestOverlay() {
     if (overlayQueued) return;
@@ -405,6 +388,12 @@
     requestDraw();
   });
 
+  // The loupe of a painting tool appears a moment after Ctrl / Alt is pressed.
+  $effect(() => {
+    void paintTools.picksColor(tools.active);
+    requestDraw();
+  });
+
   // Theme or transparency display change (Settings > Canvas).
   $effect(() => {
     void theme.effective;
@@ -470,7 +459,7 @@
       requestDraw();
       return;
     }
-    if (pickModifier(tool, e.ctrlKey, e.altKey) && (e.button === 0 || e.button === 2)) {
+    if ((e.button === 0 || e.button === 2) && paintTools.pickPress(tool, e)) {
       // A painting tool + Ctrl or Alt: the Color Picker (left: FG, right: BG), of what is
       // seen.
       e.preventDefault();
@@ -596,11 +585,7 @@
     hover = { sx, sy, ix, iy };
     inside = true;
     // Ctrl / Alt may have changed without a key event reaching the page (Alt+Tab).
-    if (paintTools.ctrl !== e.ctrlKey || paintTools.alt !== e.altKey) {
-      paintTools.ctrl = e.ctrlKey;
-      paintTools.alt = e.altKey;
-      requestDraw();
-    }
+    if (paintTools.setModifiers(e.ctrlKey, e.altKey)) requestDraw();
     if (loupeShown()) requestOverlay();
   }
 
@@ -689,13 +674,11 @@
     const keys = (e: KeyboardEvent) => {
       // Space pans (not while typing text).
       if (e.code === "Space" && !isTextInput(e.target)) spaceDown = e.type === "keydown";
-      if (e.key === "Alt" && paintTools.alt !== (e.type === "keydown")) {
-        paintTools.alt = e.type === "keydown";
-        requestDraw();
-      }
-      if (e.key === "Control" && paintTools.ctrl !== (e.type === "keydown")) {
-        paintTools.ctrl = e.type === "keydown";
-        requestDraw();
+      if (e.key === "Alt" || e.key === "Control") {
+        const down = e.type === "keydown";
+        const ctrl = e.key === "Control" ? down : paintTools.ctrl;
+        const alt = e.key === "Alt" ? down : paintTools.alt;
+        if (paintTools.setModifiers(ctrl, alt)) requestDraw();
       }
       // Alt alone would move the focus to the window menu.
       if (e.key === "Alt" && ALT_PICK_TOOLS.includes(tools.active)) e.preventDefault();

@@ -2,6 +2,9 @@
   // Font family picker: a button showing the current font in its own face, and a list where
   // every family is drawn in its own face (a native <select> cannot style its options), with
   // a search field. Keyboard: type to filter, Up / Down, Enter picks, Escape closes.
+  // Only the rows in view are in the page (a virtual list): the webview loads a font face
+  // the first time text is drawn with it, so a full list made the first open wait for
+  // hundreds of fonts.
   import { tick } from "svelte";
   import { fontFamilies } from "../lib/text/render";
 
@@ -22,10 +25,31 @@
   let list = $state<HTMLElement>();
   let search = $state<HTMLInputElement>();
   let pos = $state({ left: 0, top: 0, maxHeight: 300 });
+  /** Row height (CSS px) and the scroll position of the list. */
+  const ROW = 22;
+  /** Rows drawn beyond the visible ones, above and below. */
+  const SPARE = 6;
+  let scrollTop = $state(0);
+  let listHeight = $state(300);
 
   let shown = $derived(
     query ? fonts.filter((f) => f.toLowerCase().includes(query.toLowerCase())) : fonts,
   );
+
+  let first = $derived(Math.max(0, Math.floor(scrollTop / ROW) - SPARE));
+  let last = $derived(Math.min(shown.length, Math.ceil((scrollTop + listHeight) / ROW) + SPARE));
+  let visible = $derived(shown.slice(first, last));
+
+  /** Scrolls row `i` into view (`center`: in the middle of the list). */
+  function reveal(i: number, center = false) {
+    if (!list) return;
+    const top = i * ROW;
+    if (center) list.scrollTop = Math.max(0, top - (list.clientHeight - ROW) / 2);
+    else if (top < list.scrollTop) list.scrollTop = top;
+    else if (top + ROW > list.scrollTop + list.clientHeight)
+      list.scrollTop = top + ROW - list.clientHeight;
+    scrollTop = list.scrollTop;
+  }
 
   /** CSS font-family value for a family name. */
   const face = (f: string) => `"${f.replace(/"/g, "")}", var(--font-ui, sans-serif)`;
@@ -46,10 +70,12 @@
     };
     query = "";
     hover = Math.max(0, fonts.indexOf(value));
+    scrollTop = 0;
     open = true;
     await tick();
     search?.focus();
-    list?.querySelector(".on")?.scrollIntoView({ block: "center" });
+    if (list) listHeight = list.clientHeight;
+    reveal(hover, true);
   }
 
   function pick(f: string) {
@@ -65,7 +91,7 @@
     } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       hover = Math.max(0, Math.min(shown.length - 1, hover + (e.key === "ArrowDown" ? 1 : -1)));
-      list?.children[hover]?.scrollIntoView({ block: "nearest" });
+      reveal(hover);
     } else if (e.key === "Enter") {
       e.preventDefault();
       e.stopPropagation();
@@ -119,27 +145,44 @@
       placeholder="Search fonts"
       bind:this={search}
       bind:value={query}
-      oninput={() => (hover = 0)}
+      oninput={() => {
+        hover = 0;
+        if (list) list.scrollTop = 0;
+        scrollTop = 0;
+      }}
     />
-    <div class="list" role="listbox" aria-label={title} bind:this={list}>
-      {#each shown as f, i (f)}
-        <div
-          class="item"
-          class:on={f === value}
-          class:hover={i === hover}
-          role="option"
-          aria-selected={f === value}
-          tabindex="-1"
-          style:font-family={face(f)}
-          onpointerenter={() => (hover = i)}
-          onclick={() => pick(f)}
-          onkeydown={() => {}}
-        >
-          {f}
+    <div
+      class="list"
+      role="listbox"
+      aria-label={title}
+      bind:this={list}
+      onscroll={(e) => (scrollTop = e.currentTarget.scrollTop)}
+    >
+      {#if shown.length}
+        <div class="spacer" style:height="{shown.length * ROW}px">
+          {#each visible as f, k (f)}
+            {@const i = first + k}
+            <div
+              class="item"
+              class:on={f === value}
+              class:hover={i === hover}
+              role="option"
+              aria-selected={f === value}
+              tabindex="-1"
+              style:top="{i * ROW}px"
+              style:height="{ROW}px"
+              style:font-family={face(f)}
+              onpointerenter={() => (hover = i)}
+              onclick={() => pick(f)}
+              onkeydown={() => {}}
+            >
+              {f}
+            </div>
+          {/each}
         </div>
       {:else}
-        <div class="empty">No fonts match</div>
-      {/each}
+        <div class="empty">{fonts.length ? "No fonts match" : "Loading fonts…"}</div>
+      {/if}
     </div>
   </div>
 {/if}
@@ -196,11 +239,18 @@
     background: var(--bg-popup);
     contain: paint;
   }
+  .spacer {
+    position: relative;
+  }
   .item {
-    padding: 1px 8px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    padding: 0 8px;
     border-radius: var(--radius);
     font-size: 14px;
-    line-height: 1.3;
+    line-height: 22px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

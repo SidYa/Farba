@@ -30,6 +30,9 @@ export const CTRL_PICK_TOOLS = ["paintbrush", "eraser", "bucket-fill", "gradient
 
 /** Whether these modifiers turn the painting tool into the Color Picker (Ctrl+Alt sizes
  *  the brush with the wheel instead). */
+/** How long Ctrl or Alt must be held alone before the loupe shows, ms. */
+const PICK_DELAY_MS = 80;
+
 export function pickModifier(tool: string, ctrl: boolean, alt: boolean): boolean {
   return alt ? !ctrl && ALT_PICK_TOOLS.includes(tool) : ctrl && CTRL_PICK_TOOLS.includes(tool);
 }
@@ -61,6 +64,33 @@ class PaintTools {
   alt = $state(false);
   /** Ctrl is held too (Ctrl+Alt+wheel sizes the brush: the outline stays). */
   ctrl = $state(false);
+  /** Ctrl+Alt was pressed (sizing the brush): no picking until both keys are released, so
+   *  the key released last does not bring the Color Picker up. */
+  private combo = $state(false);
+  /** One of Ctrl / Alt has been held alone for PICK_DELAY_MS: the loupe may show (the
+   *  first key of Ctrl+Alt does not flash it). */
+  private armed = $state(false);
+  private armTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** Takes the state of Ctrl and Alt (key or pointer event); true when it changed. */
+  setModifiers(ctrl: boolean, alt: boolean): boolean {
+    if (ctrl === this.ctrl && alt === this.alt) return false;
+    this.ctrl = ctrl;
+    this.alt = alt;
+    if (ctrl && alt) this.combo = true;
+    else if (!ctrl && !alt) this.combo = false;
+    clearTimeout(this.armTimer);
+    this.armed = false;
+    if (ctrl !== alt && !this.combo)
+      this.armTimer = setTimeout(() => (this.armed = true), PICK_DELAY_MS);
+    return true;
+  }
+
+  /** A press with these modifiers picks a colour (not right after Ctrl+Alt). */
+  pickPress(tool: string, e: PointerEvent): boolean {
+    this.setModifiers(e.ctrlKey, e.altKey);
+    return !this.combo && pickModifier(tool, e.ctrlKey, e.altKey);
+  }
   /** Clone / Heal source (Ctrl+click): image point and the layer it was set on. */
   private source: { doc: Doc; x: number; y: number; layer: number } | undefined;
   /** "Aligned": the offset fixed by the first stroke after the source was set. */
@@ -205,9 +235,8 @@ class PaintTools {
   move(e: PointerEvent, points: [number, number][]) {
     const [ix, iy] = points[points.length - 1]!;
     this.cursor = { x: ix, y: iy, shift: e.shiftKey };
-    this.ctrl = e.ctrlKey;
     // Also after Alt+Tab, whose key-up never reaches the page.
-    this.alt = e.altKey;
+    this.setModifiers(e.ctrlKey, e.altKey);
     if (this.painting) {
       for (const [x, y] of points) this.strokeTo(x, y);
     } else if (this.gradient) {
@@ -262,7 +291,7 @@ class PaintTools {
 
   /** Alt or Ctrl alone with a painting tool: the Color Picker, not the brush (no outline). */
   picksColor(tool: string): boolean {
-    return !this.busy && pickModifier(tool, this.ctrl, this.alt);
+    return !this.busy && this.armed && !this.combo && pickModifier(tool, this.ctrl, this.alt);
   }
 
   /** The brush outline replaces the pointer (no crosshair inside the circle). */

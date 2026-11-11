@@ -642,6 +642,22 @@ impl Stroke {
             let c = b.color;
             premul(&[c.r, c.g, c.b, c.a])
         };
+        let flow = b.flow.clamp(0.0, 1.0);
+        if b.mode == PaintMode::Smudge
+            && let Some(smear) = self.smear.as_mut()
+        {
+            // GIMP's smudge (gimp_gegl_smudge_with_paint): before the dab, the smear takes
+            // in the pixels under the brush, `accum = rate * accum + (1 - rate) * canvas`,
+            // over the whole box. The dab then pastes this mix, so even under the hard
+            // middle of the brush a pixel moves only part of the way towards the smeared
+            // colour: smooth, long smears instead of pixels replaced outright.
+            for (i, sm) in smear.iter_mut().enumerate() {
+                let now = pm(i % n + 1, i / n + 1);
+                for k in 0..4 {
+                    sm[k] = sm[k] * rate + now[k] * (1.0 - rate);
+                }
+            }
+        }
         let mut out: Vec<Option<[f32; 4]>> = vec![None; n * m];
         for y in 0..m {
             for x in 0..n {
@@ -667,12 +683,14 @@ impl Stroke {
                 let c = pm(x + 1, y + 1);
                 let target = match b.mode {
                     PaintMode::Smudge => {
-                        let s = &mut self.smear.as_mut().unwrap()[y * n + x];
-                        // Picks up some of the colour (GIMP's flow).
+                        // Paints some of the FG colour into the smear (GIMP's flow); the
+                        // smear itself keeps the image colours.
+                        let sm = self.smear.as_ref().unwrap()[y * n + x];
+                        let mut t = [0f32; 4];
                         for k in 0..4 {
-                            s[k] += (fg[k] - s[k]) * b.flow.clamp(0.0, 1.0);
+                            t[k] = sm[k] + (fg[k] - sm[k]) * flow;
                         }
-                        *s
+                        t
                     }
                     PaintMode::Convolve(sharpen) => {
                         // 3 x 3 Gaussian of the neighbours.
@@ -719,17 +737,6 @@ impl Stroke {
                     o[3] = c[3];
                 }
                 out[y * n + x] = Some(o);
-            }
-        }
-        // The smear continues with what is under the brush now (GIMP's rate).
-        if b.mode == PaintMode::Smudge
-            && let Some(smear) = self.smear.as_mut()
-        {
-            for (i, s) in smear.iter_mut().enumerate() {
-                let now = out[i].unwrap_or_else(|| pm(i % n + 1, i / n + 1));
-                for k in 0..4 {
-                    s[k] = s[k] * rate + now[k] * (1.0 - rate);
-                }
             }
         }
         let tile_count = (surface.tiles_x() * surface.tiles_y()) as usize;
