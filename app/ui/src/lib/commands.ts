@@ -620,7 +620,22 @@ export function registerCommands() {
       label: t.name,
       icon: t.icon,
       keys: t.keys,
-      run: () => tools.select(t.id),
+      run: () => {
+        tools.select(t.id);
+        // P is the Paintbrush in its Brush mode (N its Pencil mode, below).
+        if (t.id === "paintbrush") tools.setOption("paintbrush", "mode", "brush");
+      },
     })),
+    {
+      // The Pencil is a mode of the Paintbrush (owner request 2026-11-11); N keeps GIMP's key.
+      id: "tool-pencil",
+      label: "Pencil",
+      icon: "edit",
+      keys: ["N"],
+      run: () => {
+        tools.select("paintbrush");
+        tools.setOption("paintbrush", "mode", "pencil");
+      },
+    },
   ]);
 }

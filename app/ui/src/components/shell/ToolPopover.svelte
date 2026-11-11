@@ -4,7 +4,7 @@
   // next to the toolbox, closed by clicking outside or Escape.
   import Icon from "../Icon.svelte";
   import { shortcutOf } from "../../lib/actions";
-  import { TOOLS, tools, type ToolOption } from "../../lib/tools.svelte";
+  import { TOOLS, optionShown, tools, type ToolOption } from "../../lib/tools.svelte";
   import FontPicker from "../FontPicker.svelte";
   import { numberField } from "../../lib/numberfield";
 
@@ -83,13 +83,13 @@
   aria-label="{tool.name} options"
 >
   <header>
-    <Icon name={tool.icon} size={20} />
+    <Icon name={tools.icon(tool.id)} size={20} />
     <span class="name">{tool.name}</span>
     <span class="key">{shortcutOf(`tool-${tool.id}`)}</span>
   </header>
 
   <div class="body">
-    {#each tool.options as o (o.key)}
+    {#each tool.options.filter((o) => optionShown(o, tools.values[toolId]!)) as o (o.key)}
       {#if o.type === "slider"}
         <div class="slider" onwheel={(e) => onWheelSlider(e, o)}>
           <div class="row">
@@ -150,7 +150,7 @@
         <div class="row">
           <span class="label">{o.label}</span>
           <div class="modes" role="radiogroup" aria-label={o.label}>
-            {#each MODES as [mode, title, icon] (mode)}
+            {#each o.choices ?? MODES as [mode, title, icon] (mode)}
               <button
                 class:on={value<string>(o) === mode}
                 {title}

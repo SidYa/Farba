@@ -1,6 +1,6 @@
 <script lang="ts">
   // One-column toolbox in GIMP's order. By default every tool has its own button, with faint
-  // three-dot dividers between groups of similar tools. With Settings > "Group similar
+  // three-dot dividers between sections (TOOL_SECTIONS) of similar tools. With Settings > "Group similar
   // tools" (owner decision 2026-10-12) similar tools share a button (TOOL_GROUPS): it shows
   // the last chosen tool of its group and has a corner mark; holding the left button opens
   // the group to the right, where a tool is picked by releasing over it or by clicking it.
@@ -9,7 +9,7 @@
   import ToolFlyout from "./ToolFlyout.svelte";
   import ToolPopover from "./ToolPopover.svelte";
   import { shortcutOf } from "../../lib/actions";
-  import { TOOL_GROUPS, toolDef, tools } from "../../lib/tools.svelte";
+  import { TOOL_GROUPS, TOOL_SECTIONS, toolDef, tools } from "../../lib/tools.svelte";
 
   /** How long the button must be held to open its group. */
   const HOLD_MS = 300;
@@ -42,8 +42,8 @@
 
   // Grouped: one button per group; otherwise one per tool (each a group of one).
   let buttons = $derived(tools.grouped ? TOOL_GROUPS : TOOL_GROUPS.flat().map((id) => [id]));
-  /** First tool of every group: a divider goes above it when not grouped. */
-  const starts = new Set(TOOL_GROUPS.map((g) => g[0]!));
+  /** First tool of every section: a divider goes above it. */
+  const starts = new Set(TOOL_SECTIONS.map((s) => s[0]![0]!));
 
   function tooltip(id: string, group: string[]): string {
     const t = toolDef(id);
@@ -75,7 +75,7 @@
       onclick={() => tools.select(id)}
       oncontextmenu={(e) => openOptions(e, id)}
     >
-      <Icon name={toolDef(id).icon} size={20} />
+      <Icon name={tools.icon(id)} size={20} />
     </button>
   {/each}
 </nav>

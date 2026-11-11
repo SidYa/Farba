@@ -63,7 +63,7 @@
       onpointerup={() => pick(id)}
       onclick={() => pick(id)}
     >
-      <Icon name={t.icon} size={18} />
+      <Icon name={tools.icon(id)} size={18} />
       <span class="name">{t.name}</span>
       <span class="key">{shortcutOf(`tool-${id}`)}</span>
     </button>

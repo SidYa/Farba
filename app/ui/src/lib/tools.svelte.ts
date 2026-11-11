@@ -18,8 +18,19 @@ export type ToolOption =
     }
   | { key: string; type: "select"; label: string; choices: [string, string][]; default: string }
   | { key: string; type: "check"; label: string; default: boolean }
-  | { key: string; type: "modes"; label: string; default: string } // selection combine modes
+  // Icon buttons, one per mode: [value, tooltip, icon] (the selection combine modes when
+  // `choices` is left out).
+  | {
+      key: string;
+      type: "modes";
+      label: string;
+      default: string;
+      choices?: [string, string, string][];
+    }
   | { key: string; type: "font"; label: string; default: string }; // installed font families
+
+/** An option shown only while another option of the tool has a given value. */
+export type ToolOptionDef = ToolOption & { onlyIf?: [string, OptionValue] };
 
 export interface ToolDef {
   id: string;
@@ -27,10 +38,10 @@ export interface ToolDef {
   icon: string;
   keys: string[];
   help: string;
-  options: ToolOption[];
+  options: ToolOptionDef[];
 }
 
-const selectionCommon: ToolOption[] = [
+const selectionCommon: ToolOptionDef[] = [
   { key: "mode", type: "modes", label: "Mode", default: "replace" },
   { key: "antialias", type: "check", label: "Antialiasing", default: true },
   { key: "feather", type: "check", label: "Feather edges", default: false },
@@ -45,7 +56,7 @@ const selectionCommon: ToolOption[] = [
   },
 ];
 
-const thresholdOptions: ToolOption[] = [
+const thresholdOptions: ToolOptionDef[] = [
   { key: "transparent", type: "check", label: "Select transparent areas", default: true },
   { key: "sampleMerged", type: "check", label: "Sample merged", default: false },
   { key: "threshold", type: "slider", label: "Threshold", min: 0, max: 255, default: 15 },
@@ -269,7 +280,7 @@ export const TOOLS: ToolDef[] = [
     name: "Bucket Fill",
     icon: "format_color_fill",
     keys: ["Shift+B"],
-    help: "Fill selected area with a colour (Shift: toggle the affected area; Alt: pick a colour)",
+    help: "Fill selected area with a colour (Shift: toggle the affected area; Ctrl or Alt: pick a colour)",
     options: [
       {
         key: "fill",
@@ -302,7 +313,7 @@ export const TOOLS: ToolDef[] = [
     name: "Gradient",
     icon: "gradient",
     keys: ["G"],
-    help: "Fill with a colour gradient (Ctrl: snap the angle; Alt: pick a colour)",
+    help: "Fill with a colour gradient (Ctrl while dragging: snap the angle; Ctrl or Alt: pick a colour)",
     options: [
       {
         key: "gradient",
@@ -344,10 +355,20 @@ export const TOOLS: ToolDef[] = [
     name: "Paintbrush",
     icon: "brush",
     keys: ["P"],
-    help: "Paint smooth strokes using a brush (Shift+click: straight line; Alt: pick a colour)",
+    help: "Paint strokes: smooth (Brush mode) or hard edged pixels (Pencil mode). Shift+click: straight line; Ctrl or Alt: pick a colour",
     options: [
+      {
+        key: "mode",
+        type: "modes",
+        label: "Mode",
+        default: "brush",
+        choices: [
+          ["brush", "Brush: smooth strokes", "brush"],
+          ["pencil", "Pencil: hard edged pixels (N)", "edit"],
+        ],
+      },
       brushSize,
-      hardness,
+      { ...hardness, onlyIf: ["mode", "brush"] },
       opacity,
       {
         key: "spacing",
@@ -357,23 +378,16 @@ export const TOOLS: ToolDef[] = [
         max: 200,
         default: 10,
         unit: "%",
+        onlyIf: ["mode", "brush"],
       },
     ],
-  },
-  {
-    id: "pencil",
-    name: "Pencil",
-    icon: "edit",
-    keys: ["N"],
-    help: "Paint hard edged pixels (Shift+click: straight line; Alt: pick a colour)",
-    options: [brushSize, opacity],
   },
   {
     id: "eraser",
     name: "Eraser",
     icon: "ink_eraser",
     keys: ["Shift+E"],
-    help: "Erase to transparency (Shift+click: straight line; Alt: pick a colour)",
+    help: "Erase to transparency (Shift+click: straight line; Ctrl or Alt: pick a colour)",
     options: [
       brushSize,
       hardness,
@@ -402,7 +416,7 @@ export const TOOLS: ToolDef[] = [
     name: "Smudge",
     icon: "pan_tool_alt",
     keys: ["S"],
-    help: "Smear the pixels along the stroke (Alt: pick a colour)",
+    help: "Smear the pixels along the stroke (Ctrl or Alt: pick a colour)",
     options: [
       brushSize,
       hardness,
@@ -542,9 +556,11 @@ export const TOOLS: ToolDef[] = [
     name: "Color Picker",
     icon: "colorize",
     keys: ["O"],
-    help: "Set colours from image pixels (left click: FG, right click: BG)",
+    help: "Set colours from image pixels as seen (left click: FG, right click: BG)",
     options: [
-      { key: "sampleMerged", type: "check", label: "Sample merged", default: false },
+      // Picks what is seen by default (all visible layers); "sampleLayer" replaced the old
+      // "sampleMerged" (off by default) so the saved value does not keep the old behaviour.
+      { key: "sampleLayer", type: "check", label: "Active layer only", default: false },
       { key: "average", type: "check", label: "Sample average", default: false },
       { key: "radius", type: "slider", label: "Radius", min: 1, max: 300, default: 3, unit: "px" },
     ],
@@ -552,22 +568,22 @@ export const TOOLS: ToolDef[] = [
 ];
 
 /**
- * Toolbox buttons, top to bottom. Tools in one group share a button that shows the last
- * chosen one; holding the button opens the others (GIMP 2.10 / Photoshop tool groups).
+ * Toolbox sections, top to bottom: divider-separated blocks of buttons. Tools in one group
+ * share a button that shows the last chosen one; holding the button opens the others
+ * (GIMP 2.10 / Photoshop tool groups). The drawing tools form one block (owner request
+ * 2026-11-11): Paintbrush, Bucket Fill, Gradient, Eraser, Color Picker, Text.
  */
-export const TOOL_GROUPS: string[][] = [
-  ["move"],
-  ["rect-select", "ellipse-select", "free-select"],
-  ["fuzzy-select", "by-color-select"],
-  ["rotate", "scale", "flip", "transform-3d", "handle-transform"],
-  ["bucket-fill", "gradient"],
-  ["paintbrush", "pencil"],
-  ["eraser"],
-  ["clone", "heal"],
-  ["smudge", "blur-sharpen", "dodge-burn"],
-  ["text"],
-  ["color-picker"],
+export const TOOL_SECTIONS: string[][][] = [
+  [["move"]],
+  [["rect-select", "ellipse-select", "free-select"]],
+  [["fuzzy-select", "by-color-select"]],
+  [["rotate", "scale", "flip", "transform-3d", "handle-transform"]],
+  [["paintbrush"], ["bucket-fill", "gradient"], ["eraser"], ["color-picker"], ["text"]],
+  [["clone", "heal"]],
+  [["smudge", "blur-sharpen", "dodge-burn"]],
 ];
+
+export const TOOL_GROUPS: string[][] = TOOL_SECTIONS.flat();
 
 /**
  * Brush tools share one size (owner decision 2026-10-14): changing it on one (slider, wheel,
@@ -575,7 +591,6 @@ export const TOOL_GROUPS: string[][] = [
  */
 export const SHARED_SIZE_TOOLS = [
   "paintbrush",
-  "pencil",
   "eraser",
   "clone",
   "heal",
@@ -593,6 +608,11 @@ function validTool(id: string): string {
   return TOOLS.some((t) => t.id === id) ? id : "paintbrush";
 }
 
+/** Whether an option is shown with the tool's current values (`onlyIf`). */
+export function optionShown(o: ToolOptionDef, values: Record<string, OptionValue>): boolean {
+  return !o.onlyIf || values[o.onlyIf[0]] === o.onlyIf[1];
+}
+
 function defaults(): Record<string, Record<string, OptionValue>> {
   const out: Record<string, Record<string, OptionValue>> = {};
   for (const t of TOOLS) out[t.id] = Object.fromEntries(t.options.map((o) => [o.key, o.default]));
@@ -601,6 +621,11 @@ function defaults(): Record<string, Record<string, OptionValue>> {
 
 class Tools {
   active = $state<string>(validTool(loadSetting("active-tool", "paintbrush")));
+  /** The Paintbrush icon follows its mode (the Pencil is a mode of it now). */
+  icon(id: string): string {
+    if (id === "paintbrush" && this.values.paintbrush?.mode === "pencil") return "edit";
+    return toolDef(id).icon;
+  }
   values = $state(shareSize(mergeSaved(defaults(), loadSetting("tool-options", {})), this.active));
   /** The tool each group button shows, keyed by the group's first tool id. */
   shownInGroup = $state<Record<string, string>>(loadSetting("tool-groups", {}));

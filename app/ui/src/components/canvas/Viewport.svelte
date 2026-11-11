@@ -33,7 +33,13 @@
   import { adjustToolOption } from "../../lib/commands";
   import { confirmRasterize, rasterAllowed } from "../../lib/textguard";
   import { moveTool } from "../../lib/canvas/movetool.svelte";
-  import { ALT_PICK_TOOLS, PAINT_TOOLS, paintTools } from "../../lib/canvas/painttools.svelte";
+  import {
+    ALT_PICK_TOOLS,
+    PAINT_TOOLS,
+    paintTools,
+    pickModifier,
+  } from "../../lib/canvas/painttools.svelte";
+  import { drawLoupe } from "../../lib/canvas/loupe";
   import { SELECTION_TOOLS, selectTools } from "../../lib/canvas/selecttools.svelte";
   import { documents, onDocumentClosed, type Doc } from "../../lib/documents.svelte";
   import { dialogs } from "../../lib/dialogs.svelte";
@@ -79,9 +85,14 @@
   let spaceDown = false;
 
   let pan: { x: number; y: number; vx: number; vy: number } | undefined;
-  /** Color Picker drag: which colour it sets and the last picked colour. */
-  /** Color Picker drag; `alt`: picked with Alt from a painting tool. */
-  let picking: { doc: Doc; primary: boolean; alt?: boolean; color?: Rgba } | undefined;
+  /** Color Picker drag; `alt`: picked with Ctrl / Alt from a painting tool; `before`: the
+   *  colour it replaces (shown in the loupe ring). */
+  let picking:
+    { doc: Doc; primary: boolean; alt?: boolean; color?: Rgba; before: Rgba } | undefined;
+  /** The pointer over the canvas (device and image pixels), for the loupe. */
+  let hover: { sx: number; sy: number; ix: number; iy: number } | undefined;
+  /** The pointer is over the canvas (the loupe hides the system pointer). */
+  let inside = $state(false);
 
   const FULL = 0xffffffff;
 
@@ -266,6 +277,13 @@
     overlay.restore();
   }
 
+  /** The Color Picker tool, or a painting tool with Ctrl / Alt held: the loupe is shown. */
+  function loupeShown(): boolean {
+    if (pan || spaceDown || guideHover || !documents.active) return false;
+    if (picking) return true;
+    return tools.active === "color-picker" || paintTools.picksColor(tools.active);
+  }
+
   function drawOverlay(doc: Doc | undefined) {
     overlay.clearRect(0, 0, overlayEl.width, overlayEl.height);
     if (doc) drawGuides(doc);
@@ -273,6 +291,38 @@
     paintTools.drawOverlay(overlay, doc, tools.active);
     transformTools.drawOverlay(overlay, doc);
     if (tools.active === "text" || textTool.edit) textTool.drawOverlay(overlay, doc, blinkOn);
+    if (doc && hover && loupeShown()) {
+      const primary = picking?.primary ?? true;
+      const current = picking?.before ?? (primary ? palette.primary : palette.secondary);
+      const rgb = (name: string) =>
+        `rgb(${cssColor(name)
+          .map((c) => Math.round(c * 255))
+          .join(",")})`;
+      drawLoupe(
+        overlay,
+        doc,
+        hover.sx,
+        hover.sy,
+        hover.ix,
+        hover.iy,
+        current,
+        rgb("--bg-canvas"),
+        rgb("--accent"),
+        performance.now(),
+      );
+      // The outline pulses: redraw the overlay (only) on the next frame.
+      requestOverlay();
+    }
+  }
+
+  let overlayQueued = false;
+  function requestOverlay() {
+    if (overlayQueued) return;
+    overlayQueued = true;
+    requestAnimationFrame(() => {
+      overlayQueued = false;
+      if (!frameQueued && overlay) drawOverlay(documents.active);
+    });
   }
 
   function drawNow() {
@@ -420,15 +470,12 @@
       requestDraw();
       return;
     }
-    if (
-      e.altKey &&
-      !e.ctrlKey &&
-      ALT_PICK_TOOLS.includes(tool) &&
-      (e.button === 0 || e.button === 2)
-    ) {
-      // A painting tool + Alt: the Color Picker (left: FG, right: BG), of what is seen.
+    if (pickModifier(tool, e.ctrlKey, e.altKey) && (e.button === 0 || e.button === 2)) {
+      // A painting tool + Ctrl or Alt: the Color Picker (left: FG, right: BG), of what is
+      // seen.
       e.preventDefault();
-      picking = { doc, primary: e.button === 0, alt: true };
+      const primary = e.button === 0;
+      picking = { doc, primary, alt: true, before: primary ? palette.primary : palette.secondary };
       pickAt(e);
     } else if (e.button === 0 && tool === "text") {
       // Keep the keyboard on the hidden text input (a press would move the focus away).
@@ -454,7 +501,8 @@
       selectTools.down(doc, tool, e, ...selectPoint(doc, e));
       requestDraw();
     } else if (tool === "color-picker" && (e.button === 0 || e.button === 2)) {
-      picking = { doc, primary: e.button === 0 };
+      const primary = e.button === 0;
+      picking = { doc, primary, before: primary ? palette.primary : palette.secondary };
       pickAt(e);
     }
   }
@@ -468,13 +516,14 @@
     const { doc, primary, alt } = picking;
     const average = tools.option<boolean>("color-picker", "average");
     const radius = average ? tools.option<number>("color-picker", "radius") : 1;
-    // Alt picks the colour on screen (all visible layers): picking from the active layer
-    // only gave transparent or hidden colours with several layers.
-    const merged = alt || tools.option<boolean>("color-picker", "sampleMerged");
+    // The colour on screen (all visible layers, whatever layer is active): picking from the
+    // active layer only gave transparent colours with several layers. The Color Picker can
+    // still be limited to the active layer ("Active layer only").
+    const merged = alt || !tools.option<boolean>("color-picker", "sampleLayer");
     const [ix, iy] = screenToImage(doc.view, ...devicePoint(e));
     const p = doc.core.sample(ix, iy, radius, merged);
-    // Nothing visible there (Alt): keep the colour instead of picking "transparent".
-    if (!p || (alt && p[3] === 0)) return;
+    // Nothing visible there: keep the colour instead of picking "transparent".
+    if (!p || (merged && p[3] === 0)) return;
     const c = { r: p[0]!, g: p[1]!, b: p[2]!, a: p[3]! / 255 };
     picking.color = c;
     palette.setColor(primary, c, false);
@@ -540,9 +589,19 @@
       selectTools.move(e, ...selectPoint(doc, e));
       requestDraw();
     }
-    const [ix, iy] = screenToImage(doc.view, ...devicePoint(e));
+    const [sx, sy] = devicePoint(e);
+    const [ix, iy] = screenToImage(doc.view, sx, sy);
     pointer.x = Math.floor(ix);
     pointer.y = Math.floor(iy);
+    hover = { sx, sy, ix, iy };
+    inside = true;
+    // Ctrl / Alt may have changed without a key event reaching the page (Alt+Tab).
+    if (paintTools.ctrl !== e.ctrlKey || paintTools.alt !== e.altKey) {
+      paintTools.ctrl = e.ctrlKey;
+      paintTools.alt = e.altKey;
+      requestDraw();
+    }
+    if (loupeShown()) requestOverlay();
   }
 
   function onPointerUp() {
@@ -558,6 +617,7 @@
     if (picking) {
       if (picking.color) palette.setColor(picking.primary, picking.color);
       picking = undefined;
+      requestDraw();
     }
     if (transformTools.busy) transformTools.up();
     if (textTool.busy && documents.active) {
@@ -696,6 +756,10 @@
         SELECTION_TOOLS.includes(tools.active) ||
         PAINT_TOOLS.includes(tools.active)}
       class:brush={documents.active !== undefined && paintTools.showsOutline(tools.active)}
+      class:loupe={documents.active !== undefined &&
+        inside &&
+        !guideHover &&
+        (tools.active === "color-picker" || paintTools.picksColor(tools.active))}
       class:mover={tools.active === "move"}
       class:guide-row={guideHover === "row"}
       class:guide-col={guideHover === "col"}
@@ -707,6 +771,8 @@
       onpointercancel={onPointerUp}
       onpointerleave={() => {
         pointer.x = pointer.y = undefined;
+        hover = undefined;
+        inside = false;
         paintTools.leave();
         requestDraw();
       }}
@@ -834,6 +900,10 @@
   }
   /* The brush outline is the pointer. */
   canvas.brush {
+    cursor: none;
+  }
+  /* The loupe is the pointer (its middle pixel is the one picked). */
+  canvas.loupe {
     cursor: none;
   }
   /* After the tool cursors: over a guide every tool can drag it. */

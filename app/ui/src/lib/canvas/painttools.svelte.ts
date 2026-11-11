@@ -7,9 +7,11 @@
 // stroke ended; Shift with Bucket Fill toggles "fill similar colours" / "fill whole
 // selection"; Ctrl while dragging a gradient snaps its angle to 15° steps. Clone / Heal:
 // Ctrl+click sets the source (the active layer, or the merged image with Sample merged);
-// Blur / Sharpen and Dodge / Burn: Ctrl at the press uses the other mode. Paintbrush /
-// Pencil: holding Alt picks colours instead (owner request 2026-10-14; GIMP uses Ctrl),
-// with the Color Picker's options; the Viewport does the picking.
+// Blur / Sharpen and Dodge / Burn: Ctrl at the press uses the other mode. Holding Alt
+// (every painting tool) or Ctrl (those where Ctrl means nothing else) picks colours
+// instead, of what is seen, with a magnifying loupe (owner requests 2026-10-14, 2026-11-11);
+// the Viewport does the picking. The Paintbrush has a Brush and a Pencil mode (the Pencil
+// tool before 2026-11-11).
 import type { Doc } from "../documents.svelte";
 import { notify } from "../notify.svelte";
 import { palette, type Rgba } from "../palette.svelte";
@@ -17,11 +19,20 @@ import { prefs } from "../prefs.svelte";
 import { tools } from "../tools.svelte";
 
 export const RETOUCH_TOOLS = ["clone", "heal", "smudge", "blur-sharpen", "dodge-burn"];
-export const BRUSH_TOOLS = ["paintbrush", "pencil", "eraser", ...RETOUCH_TOOLS];
+export const BRUSH_TOOLS = ["paintbrush", "eraser", ...RETOUCH_TOOLS];
 export const PAINT_TOOLS = [...BRUSH_TOOLS, "bucket-fill", "gradient"];
 /** Tools where holding Alt turns the pointer into the Color Picker (all painting tools,
  *  owner request 2026-10-21; GIMP uses Ctrl). */
 export const ALT_PICK_TOOLS = PAINT_TOOLS;
+/** Tools where holding Ctrl (without Alt) picks colours too: Clone / Heal (source) and
+ *  Blur / Sharpen, Dodge / Burn (other mode) use Ctrl themselves. */
+export const CTRL_PICK_TOOLS = ["paintbrush", "eraser", "bucket-fill", "gradient", "smudge"];
+
+/** Whether these modifiers turn the painting tool into the Color Picker (Ctrl+Alt sizes
+ *  the brush with the wheel instead). */
+export function pickModifier(tool: string, ctrl: boolean, alt: boolean): boolean {
+  return alt ? !ctrl && ALT_PICK_TOOLS.includes(tool) : ctrl && CTRL_PICK_TOOLS.includes(tool);
+}
 
 const CRITERIA = ["composite", "red", "green", "blue", "alpha", "hue", "saturation", "value"];
 
@@ -70,15 +81,15 @@ class PaintTools {
     if (RETOUCH_TOOLS.includes(tool)) {
       this.retouch(doc, tool, e, ix, iy);
     } else if (BRUSH_TOOLS.includes(tool)) {
-      const o = <T extends number | boolean>(k: string) => tools.option<T>(tool, k);
-      const pencil = tool === "pencil";
+      const o = <T extends number | string | boolean>(k: string) => tools.option<T>(tool, k);
+      const pencil = tool === "paintbrush" && o<string>("mode") === "pencil";
       const eraser = tool === "eraser";
       const aliased = pencil || (eraser && o<boolean>("hardEdge"));
       doc.core.begin_stroke(
         o<number>("size"),
         aliased ? 1 : o<number>("hardness") / 100,
         o<number>("opacity") / 100,
-        tool === "paintbrush" ? o<number>("spacing") / 100 : 0.1,
+        tool === "paintbrush" && !pencil ? o<number>("spacing") / 100 : 0.1,
         pack(palette.primary),
         aliased,
         eraser,
@@ -249,9 +260,9 @@ class PaintTools {
     }
   }
 
-  /** Alt alone with a painting tool: the Color Picker, not the brush (no outline). */
+  /** Alt or Ctrl alone with a painting tool: the Color Picker, not the brush (no outline). */
   picksColor(tool: string): boolean {
-    return this.alt && !this.ctrl && !this.painting && ALT_PICK_TOOLS.includes(tool);
+    return !this.busy && pickModifier(tool, this.ctrl, this.alt);
   }
 
   /** The brush outline replaces the pointer (no crosshair inside the circle). */
