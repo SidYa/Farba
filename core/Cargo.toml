@@ -5,7 +5,7 @@ resolver = "3"
 members = ["farba-core", "farba-wasm", "farba-text", "farba-io", "farba-ai", "farba-heif", "../app/src-tauri"]
 
 [workspace.package]
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 license = "GPL-3.0-only"
 authors = ["Sergii Sidko"]

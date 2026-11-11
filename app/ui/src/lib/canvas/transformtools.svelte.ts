@@ -293,7 +293,7 @@ class TransformTools {
         break;
       }
       case "edge": {
-        const keep = tools.option<boolean>("scale", "keepAspect") !== e.shiftKey;
+        const keep = tools.option<boolean>("scale", "keepRatio") !== e.shiftKey;
         const centre = e.ctrlKey;
         const [x0, y0, x1, y1] = d.box0;
         const [cx, cy] = [(x0 + x1) / 2, (y0 + y1) / 2];

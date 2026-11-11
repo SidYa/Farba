@@ -1334,7 +1334,7 @@ checksum = "dab93c7205280c4785c44517fe84d99751b81f6deb8450cb196da6be88e332bb"
 
 [[package]]
 name = "farba"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "arboard",
  "farba-core",
@@ -1356,7 +1356,7 @@ dependencies = [
 
 [[package]]
 name = "farba-ai"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "farba-core",
  "half",
@@ -1368,11 +1368,11 @@ dependencies = [
 
 [[package]]
 name = "farba-core"
-version = "1.0.0"
+version = "1.1.0"
 
 [[package]]
 name = "farba-heif"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "farba-io",
  "libloading 0.9.0",
@@ -1381,7 +1381,7 @@ dependencies = [
 
 [[package]]
 name = "farba-io"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "avif-decode",
  "farba-core",
@@ -1401,7 +1401,7 @@ dependencies = [
 
 [[package]]
 name = "farba-text"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cosmic-text",
  "serde",
@@ -1410,7 +1410,7 @@ dependencies = [
 
 [[package]]
 name = "farba-wasm"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "farba-core",
  "js-sys",

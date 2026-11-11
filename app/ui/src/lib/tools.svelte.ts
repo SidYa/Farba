@@ -223,10 +223,12 @@ export const TOOLS: ToolDef[] = [
     name: "Scale",
     icon: "tool_scale",
     keys: ["Shift+S"],
-    help: "Scale the layer or selection (Shift: keep the aspect ratio; Ctrl: from the centre). Enter applies",
+    help: "Scale the layer or selection, keeping the aspect ratio (Shift: free; Ctrl: from the centre). Enter applies",
     options: [
       interpolation,
-      { key: "keepAspect", type: "check", label: "Keep aspect ratio", default: false },
+      // On by default, Shift scales freely (owner request 2026-11-11). A new key, so the
+      // "off" saved by earlier versions does not stay.
+      { key: "keepRatio", type: "check", label: "Keep aspect ratio", default: true },
     ],
   },
   {
