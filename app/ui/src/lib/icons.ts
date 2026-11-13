@@ -14,6 +14,7 @@ const material: Record<string, string> = MATERIAL_ICONS;
 
 /** Material names of the icons that exist only in the own set (the tools, the modes). */
 const MATERIAL_NAMES: Record<string, string> = {
+  content_paste_new: "content_paste",
   tool_move: "open_with",
   tool_rect_select: "ink_selection",
   tool_ellipse_select: "lasso_select",

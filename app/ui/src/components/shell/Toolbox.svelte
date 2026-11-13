@@ -8,8 +8,14 @@
   import Icon from "../Icon.svelte";
   import ToolFlyout from "./ToolFlyout.svelte";
   import ToolPopover from "./ToolPopover.svelte";
-  import { shortcutOf } from "../../lib/actions";
-  import { TOOL_GROUPS, TOOL_SECTIONS, toolDef, tools } from "../../lib/tools.svelte";
+  import { getAction, isEnabled, runAction, shortcutOf } from "../../lib/actions";
+  import {
+    TOOL_GROUPS,
+    TOOL_SECTIONS,
+    toolDef,
+    toolboxAction,
+    tools,
+  } from "../../lib/tools.svelte";
 
   /** How long the button must be held to open its group. */
   const HOLD_MS = 300;
@@ -59,24 +65,42 @@
 <nav class="toolbox" aria-label="Tools">
   {#each buttons as group, i (group[0])}
     {@const id = tools.shown(group)}
+    {@const action = toolboxAction(id)}
     {#if !tools.grouped && i > 0 && starts.has(group[0]!)}
       <span class="divider"><Icon name="more_horiz" size={16} /></span>
     {/if}
-    <button
-      class="tool"
-      class:on={tools.active === id}
-      class:group={group.length > 1}
-      title={tooltip(id, group)}
-      aria-pressed={tools.active === id}
-      aria-haspopup={group.length > 1 ? "menu" : undefined}
-      onpointerdown={(e) => startHold(e, group)}
-      onpointerup={cancelHold}
-      onpointerleave={cancelHold}
-      onclick={() => tools.select(id)}
-      oncontextmenu={(e) => openOptions(e, id)}
-    >
-      <Icon name={tools.icon(id)} size={20} />
-    </button>
+    {#if action}
+      {@const a = getAction(action)}
+      {@const keys = shortcutOf(action)}
+      <!-- A command, not a tool (Select None): runs at once. -->
+      <button
+        class="tool"
+        disabled={!isEnabled(action)}
+        title={keys
+          ? `${a.label}
+Shortcut key: ${keys}`
+          : a.label}
+        onclick={() => runAction(action)}
+      >
+        <Icon name={a.icon ?? "more_vert"} size={20} />
+      </button>
+    {:else}
+      <button
+        class="tool"
+        class:on={tools.active === id}
+        class:group={group.length > 1}
+        title={tooltip(id, group)}
+        aria-pressed={tools.active === id}
+        aria-haspopup={group.length > 1 ? "menu" : undefined}
+        onpointerdown={(e) => startHold(e, group)}
+        onpointerup={cancelHold}
+        onpointerleave={cancelHold}
+        onclick={() => tools.select(id)}
+        oncontextmenu={(e) => openOptions(e, id)}
+      >
+        <Icon name={tools.icon(id)} size={20} />
+      </button>
+    {/if}
   {/each}
 </nav>
 
@@ -128,8 +152,11 @@
     align-items: center;
     opacity: 0.35;
   }
-  .tool:hover {
+  .tool:hover:not(:disabled) {
     background: var(--hover);
+  }
+  .tool:disabled {
+    color: var(--fg-faint);
   }
   .tool.on {
     background: var(--accent-soft);

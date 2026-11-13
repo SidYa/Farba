@@ -721,6 +721,11 @@ impl Doc {
             .map_err(js_err)
     }
 
+    /// Crops the image to the rectangle (the Crop tool).
+    pub fn crop(&mut self, x: i32, y: i32, width: u32, height: u32) -> Result<(), JsError> {
+        self.inner.crop(x, y, width, height).map_err(js_err)
+    }
+
     pub fn flip_image(&mut self, horizontal: bool) -> Result<(), JsError> {
         self.inner.flip_image(horizontal).map_err(js_err)
     }

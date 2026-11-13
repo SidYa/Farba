@@ -22,10 +22,9 @@
   });
 
   const BASE_GROUPS = [
-    ["file-new", "file-open", "file-save", "file-save-as"],
+    ["file-new", "edit-paste-as-new", "file-open", "file-save", "file-save-as"],
     ["edit-undo", "edit-redo"],
     ["edit-cut", "edit-copy", "edit-paste"],
-    ["image-crop-to-selection", "select-none"],
   ];
   // Installed add-ons add their header buttons as the last group (e.g. AI Remove
   // Background); without add-ons there is nothing.
@@ -94,6 +93,7 @@
 
   const mainMenu: MenuItem[] = [
     { action: "file-new" },
+    { action: "edit-paste-as-new" },
     { action: "file-open" },
     { action: "file-save" },
     { action: "file-save-as" },

@@ -1647,13 +1647,31 @@ impl Document {
         oy: i32,
         resize: ResizeLayers,
     ) -> Result<()> {
+        self.resize_canvas_as("Canvas Size", width, height, ox, oy, resize)
+    }
+
+    /// Crops the image to the rectangle `(x, y, width, height)` (the Crop tool): every
+    /// layer becomes the new image size, the pixels outside are removed.
+    pub fn crop(&mut self, x: i32, y: i32, width: u32, height: u32) -> Result<()> {
+        self.resize_canvas_as("Crop", width, height, -x, -y, ResizeLayers::All)
+    }
+
+    fn resize_canvas_as(
+        &mut self,
+        label: &str,
+        width: u32,
+        height: u32,
+        ox: i32,
+        oy: i32,
+        resize: ResizeLayers,
+    ) -> Result<()> {
         if width == 0 || height == 0 {
             return err("The size must be at least 1 pixel");
         }
         if (width, height, ox, oy) == (self.width, self.height, 0, 0) {
             return Ok(());
         }
-        self.edit("Canvas Size", |d| {
+        self.edit(label, |d| {
             let (iw, ih) = (d.width, d.height);
             for l in &mut d.layers {
                 let image_sized = (l.x, l.y, l.width(), l.height()) == (0, 0, iw, ih);
@@ -2261,6 +2279,33 @@ mod tests {
         d.end_stroke();
         assert_eq!(pixel(&d.composite(), 45, 50), [0, 0, 255, 255]);
         assert_eq!(pixel(&d.composite(), 55, 50), [255, 0, 0, 255]);
+    }
+
+    #[test]
+    fn crop_keeps_the_rectangle_and_undoes() {
+        let mut d = Document::new(100, 80, RED);
+        let id = d
+            .add_layer_from(
+                "Paste",
+                "Small",
+                {
+                    let mut s = Surface::new(10, 10);
+                    s.fill(WHITE.to_array());
+                    s
+                },
+                45,
+                45,
+            )
+            .unwrap();
+        d.crop(40, 40, 30, 20).unwrap();
+        assert_eq!((d.width(), d.height()), (30, 20));
+        let l = d.layer(id).unwrap();
+        assert_eq!((l.x, l.y, l.width(), l.height()), (0, 0, 30, 20));
+        let c = d.composite();
+        assert_eq!(pixel(&c, 0, 0), [255, 0, 0, 255]);
+        assert_eq!(pixel(&c, 5, 5), [255, 255, 255, 255]);
+        d.undo();
+        assert_eq!((d.width(), d.height()), (100, 80));
     }
 
     #[test]

@@ -29,6 +29,7 @@
     transformTools,
     type Session,
   } from "../../lib/canvas/transformtools.svelte";
+  import { CROP_TOOL, cropTool } from "../../lib/canvas/croptool.svelte";
   import { isTextInput } from "../../lib/actions";
   import { adjustToolOption } from "../../lib/commands";
   import { confirmRasterize, rasterAllowed } from "../../lib/textguard";
@@ -279,21 +280,34 @@
     return tools.active === "color-picker" || paintTools.picksColor(tools.active);
   }
 
+  /** A theme colour as a CSS rgb() string. */
+  function cssRgb(name: string): string {
+    return `rgb(${cssColor(name)
+      .map((c) => Math.round(c * 255))
+      .join(",")})`;
+  }
+
   function drawOverlay(doc: Doc | undefined) {
     overlay.clearRect(0, 0, overlayEl.width, overlayEl.height);
     if (doc) drawGuides(doc);
     selectTools.drawOverlay(overlay, doc);
     paintTools.drawOverlay(overlay, doc, tools.active);
     transformTools.drawOverlay(overlay, doc);
+    if (tools.active === CROP_TOOL) cropTool.drawOverlay(overlay, doc, cssRgb("--bg-canvas"));
     if (tools.active === "text" || textTool.edit) textTool.drawOverlay(overlay, doc, blinkOn);
     if (doc && hover && loupeShown()) {
       const primary = picking?.primary ?? true;
       const current = picking?.before ?? (primary ? palette.primary : palette.secondary);
-      const rgb = (name: string) =>
-        `rgb(${cssColor(name)
-          .map((c) => Math.round(c * 255))
-          .join(",")})`;
-      drawLoupe(overlay, doc, hover.sx, hover.sy, hover.ix, hover.iy, current, rgb("--bg-canvas"));
+      drawLoupe(
+        overlay,
+        doc,
+        hover.sx,
+        hover.sy,
+        hover.ix,
+        hover.iy,
+        current,
+        cssRgb("--bg-canvas"),
+      );
     }
   }
 
@@ -385,6 +399,13 @@
         transformTools.session.tool !== tools.active)
     )
       transformTools.apply();
+    // So is a crop frame (Crop tool).
+    if (
+      cropTool.session &&
+      (cropTool.session.doc !== documents.active || tools.active !== CROP_TOOL)
+    )
+      untrack(() => cropTool.apply());
+    cropCursor = "";
     requestDraw();
   });
 
@@ -430,6 +451,8 @@
 
   /** Cursor over a guide: "row" (horizontal), "col" or "". */
   let guideHover = $state("");
+  /** Crop tool cursor over its frame (resize at a handle, move inside). */
+  let cropCursor = $state("");
 
   function devicePoint(e: { clientX: number; clientY: number }): [number, number] {
     const r = canvasEl.getBoundingClientRect();
@@ -470,6 +493,9 @@
       // Keep the keyboard on the hidden text input (a press would move the focus away).
       e.preventDefault();
       textTool.down(doc, e, screenToImage(doc.view, ...devicePoint(e)));
+      requestDraw();
+    } else if (e.button === 0 && tool === CROP_TOOL) {
+      cropTool.down(doc, screenToImage(doc.view, ...devicePoint(e)));
       requestDraw();
     } else if (
       e.button === 0 &&
@@ -546,6 +572,7 @@
       paintTools.busy ||
       selectTools.busy ||
       transformTools.busy ||
+      cropTool.busy ||
       textTool.busy ||
       picking !== undefined;
     if (!dragging) {
@@ -564,6 +591,14 @@
       moveTool.move(...screenToImage(doc.view, ...devicePoint(e)));
       requestDraw();
     }
+    if (cropTool.busy) {
+      cropTool.move(e, screenToImage(doc.view, ...devicePoint(e)));
+      requestDraw();
+    }
+    cropCursor =
+      tools.active === CROP_TOOL
+        ? cropTool.cursor(doc, screenToImage(doc.view, ...devicePoint(e)))
+        : "";
     if (PAINT_TOOLS.includes(tools.active) || paintTools.busy) {
       const events = paintTools.busy ? (e.getCoalescedEvents?.() ?? [e]) : [e];
       if (!events.length) events.push(e);
@@ -605,6 +640,10 @@
       requestDraw();
     }
     if (transformTools.busy) transformTools.up();
+    if (cropTool.busy) {
+      cropTool.up();
+      requestDraw();
+    }
     if (textTool.busy && documents.active) {
       textTool.up(documents.active);
       requestDraw();
@@ -695,7 +734,8 @@
       if (
         moved ||
         (selectTools.busy && selectTools.key(e)) ||
-        (transformTools.session?.doc === doc && transformTools.key(e))
+        (transformTools.session?.doc === doc && transformTools.key(e)) ||
+        (tools.active === CROP_TOOL && cropTool.session?.doc === doc && cropTool.key(e))
       ) {
         e.preventDefault();
         e.stopPropagation();
@@ -748,6 +788,8 @@
       class:guide-col={guideHover === "col"}
       class:transform={TRANSFORM_TOOLS.includes(tools.active)}
       class:texting={tools.active === "text"}
+      class:cropping={tools.active === CROP_TOOL}
+      style:cursor={cropCursor && !guideHover ? cropCursor : undefined}
       onpointerdown={onPointerDown}
       onpointermove={onPointerMove}
       onpointerup={onPointerUp}
@@ -763,6 +805,7 @@
       ondblclick={() => {
         selectTools.dblclick();
         if (TRANSFORM_TOOLS.includes(tools.active)) transformTools.dblclick();
+        if (tools.active === CROP_TOOL) cropTool.dblclick();
         requestDraw();
       }}
       oncontextmenu={(e) => e.preventDefault()}
@@ -872,7 +915,8 @@
   canvas.texting {
     cursor: text;
   }
-  canvas.transform {
+  canvas.transform,
+  canvas.cropping {
     cursor: crosshair;
   }
   canvas.mover {

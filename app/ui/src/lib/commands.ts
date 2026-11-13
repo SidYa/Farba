@@ -367,8 +367,10 @@ export function registerCommands() {
       run: () => (documents.active ? paste(documents.active) : pasteAsNewImage()),
     },
     {
+      // GIMP's File > Create > From Clipboard: the clipboard image opens in a new tab.
       id: "edit-paste-as-new",
-      label: "Paste as New Image",
+      label: "New from Clipboard",
+      icon: "content_paste_new",
       keys: ["Ctrl+Shift+V"],
       run: pasteAsNewImage,
     },

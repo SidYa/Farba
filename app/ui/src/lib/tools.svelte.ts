@@ -211,6 +211,14 @@ export const TOOLS: ToolDef[] = [
     options: [...selectionCommon, ...thresholdOptions],
   },
   {
+    id: "crop",
+    name: "Crop",
+    icon: "crop",
+    keys: ["Shift+C"],
+    help: "Drag the handles of the frame to choose what to keep (drag inside: move it; outside: a new frame; Shift on a corner: keep its shape). Enter or double click crops, Escape resets",
+    options: [],
+  },
+  {
     id: "rotate",
     name: "Rotate",
     icon: "tool_rotate",
@@ -574,10 +582,12 @@ export const TOOLS: ToolDef[] = [
  * share a button that shows the last chosen one; holding the button opens the others
  * (GIMP 2.10 / Photoshop tool groups). The drawing tools form one block (owner request
  * 2026-11-11): Paintbrush, Bucket Fill, Gradient, Eraser, Color Picker, Text.
+ * An "action:<id>" entry is a button that runs that action instead of choosing a tool
+ * (Select None under Move, owner request 2026-11-13).
  */
 export const TOOL_SECTIONS: string[][][] = [
-  [["move"]],
-  [["rect-select", "ellipse-select", "free-select"]],
+  [["move"], ["action:select-none"]],
+  [["rect-select", "ellipse-select", "free-select"], ["crop"]],
   [["fuzzy-select", "by-color-select"]],
   [["rotate", "scale", "flip", "transform-3d", "handle-transform"]],
   [["paintbrush"], ["bucket-fill", "gradient"], ["eraser"], ["color-picker"], ["text"]],
@@ -586,6 +596,11 @@ export const TOOL_SECTIONS: string[][][] = [
 ];
 
 export const TOOL_GROUPS: string[][] = TOOL_SECTIONS.flat();
+
+/** The action of an "action:<id>" toolbox entry, or undefined for a tool. */
+export function toolboxAction(entry: string): string | undefined {
+  return entry.startsWith("action:") ? entry.slice(7) : undefined;
+}
 
 /**
  * Brush tools share one size (owner decision 2026-10-14): changing it on one (slider, wheel,
@@ -605,7 +620,7 @@ export function toolDef(id: string): ToolDef {
   return TOOLS.find((t) => t.id === id) ?? TOOLS[0]!;
 }
 
-/** A saved tool id that no longer exists (e.g. the removed Crop tool) falls back. */
+/** A saved tool id that no longer exists falls back. */
 function validTool(id: string): string {
   return TOOLS.some((t) => t.id === id) ? id : "paintbrush";
 }

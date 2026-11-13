@@ -216,6 +216,13 @@ export const FARBA_ICONS: Record<string, string> = {
     ) +
     rect(9, 3, 6, 4, 1) +
     p("M9 12h6M9 16h4", "a"),
+  // The clipboard opened as a new image (File > New from Clipboard).
+  content_paste_new:
+    p(
+      "M9 5H6.5A1.5 1.5 0 0 0 5 6.5v13A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 17.5 5H15",
+    ) +
+    rect(9, 3, 6, 4, 1) +
+    p("M12 10.5v7M8.5 14h7", "a"),
   delete:
     p("M4.5 6.5h15") +
     p("M9.5 6.5V5A1.5 1.5 0 0 1 11 3.5h2A1.5 1.5 0 0 1 14.5 5v1.5") +
