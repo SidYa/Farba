@@ -282,7 +282,7 @@ export const TOOLS: ToolDef[] = [
     name: "Bucket Fill",
     icon: "tool_bucket",
     keys: ["Shift+B"],
-    help: "Fill selected area with a colour (Shift: toggle the affected area; Ctrl or Alt: pick a colour)",
+    help: "Fill selected area with a colour (Shift: toggle the affected area; Alt: pick a colour)",
     options: [
       {
         key: "fill",
@@ -315,7 +315,7 @@ export const TOOLS: ToolDef[] = [
     name: "Gradient",
     icon: "tool_gradient",
     keys: ["G"],
-    help: "Fill with a colour gradient (Ctrl while dragging: snap the angle; Ctrl or Alt: pick a colour)",
+    help: "Fill with a colour gradient (Ctrl while dragging: snap the angle; Alt: pick a colour)",
     options: [
       {
         key: "gradient",
@@ -357,7 +357,7 @@ export const TOOLS: ToolDef[] = [
     name: "Paintbrush",
     icon: "tool_brush",
     keys: ["P"],
-    help: "Paint strokes: smooth (Brush mode) or hard edged pixels (Pencil mode). Shift+click: straight line; Ctrl or Alt: pick a colour",
+    help: "Paint strokes: smooth (Brush mode) or hard edged pixels (Pencil mode). Shift+click: straight line; Alt: pick a colour",
     options: [
       {
         key: "mode",
@@ -389,7 +389,7 @@ export const TOOLS: ToolDef[] = [
     name: "Eraser",
     icon: "tool_eraser",
     keys: ["Shift+E"],
-    help: "Erase to transparency (Shift+click: straight line; Ctrl or Alt: pick a colour)",
+    help: "Erase to transparency (Shift+click: straight line; Alt: pick a colour)",
     options: [
       brushSize,
       hardness,
@@ -418,7 +418,7 @@ export const TOOLS: ToolDef[] = [
     name: "Smudge",
     icon: "tool_smudge",
     keys: ["S"],
-    help: "Smear the pixels along the stroke (Ctrl or Alt: pick a colour)",
+    help: "Smear the pixels along the stroke (Alt: pick a colour)",
     options: [
       brushSize,
       hardness,

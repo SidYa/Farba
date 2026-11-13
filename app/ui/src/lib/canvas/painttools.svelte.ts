@@ -8,7 +8,7 @@
 // selection"; Ctrl while dragging a gradient snaps its angle to 15° steps. Clone / Heal:
 // Ctrl+click sets the source (the active layer, or the merged image with Sample merged);
 // Blur / Sharpen and Dodge / Burn: Ctrl at the press uses the other mode. Holding Alt
-// (every painting tool) or Ctrl (those where Ctrl means nothing else) picks colours
+// (every painting tool; Ctrl never does) picks colours
 // instead, of what is seen, with a magnifying loupe (owner requests 2026-10-14, 2026-11-11);
 // the Viewport does the picking. The Paintbrush has a Brush and a Pencil mode (the Pencil
 // tool before 2026-11-11).
@@ -24,17 +24,13 @@ export const PAINT_TOOLS = [...BRUSH_TOOLS, "bucket-fill", "gradient"];
 /** Tools where holding Alt turns the pointer into the Color Picker (all painting tools,
  *  owner request 2026-10-21; GIMP uses Ctrl). */
 export const ALT_PICK_TOOLS = PAINT_TOOLS;
-/** Tools where holding Ctrl (without Alt) picks colours too: Clone / Heal (source) and
- *  Blur / Sharpen, Dodge / Burn (other mode) use Ctrl themselves. */
-export const CTRL_PICK_TOOLS = ["paintbrush", "eraser", "bucket-fill", "gradient", "smudge"];
-
-/** Whether these modifiers turn the painting tool into the Color Picker (Ctrl+Alt sizes
- *  the brush with the wheel instead). */
-/** How long Ctrl or Alt must be held alone before the loupe shows, ms. */
+/** How long Alt must be held alone before the loupe shows, ms. */
 const PICK_DELAY_MS = 80;
 
+/** Whether these modifiers turn the painting tool into the Color Picker: Alt alone (Ctrl
+ *  alone never does; Ctrl+Alt sizes the brush with the wheel instead). */
 export function pickModifier(tool: string, ctrl: boolean, alt: boolean): boolean {
-  return alt ? !ctrl && ALT_PICK_TOOLS.includes(tool) : ctrl && CTRL_PICK_TOOLS.includes(tool);
+  return alt && !ctrl && ALT_PICK_TOOLS.includes(tool);
 }
 
 const CRITERIA = ["composite", "red", "green", "blue", "alpha", "hue", "saturation", "value"];
@@ -81,7 +77,7 @@ class PaintTools {
     else if (!ctrl && !alt) this.combo = false;
     clearTimeout(this.armTimer);
     this.armed = false;
-    if (ctrl !== alt && !this.combo)
+    if (alt && !ctrl && !this.combo)
       this.armTimer = setTimeout(() => (this.armed = true), PICK_DELAY_MS);
     return true;
   }

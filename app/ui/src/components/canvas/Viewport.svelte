@@ -80,7 +80,7 @@
   let spaceDown = false;
 
   let pan: { x: number; y: number; vx: number; vy: number } | undefined;
-  /** Color Picker drag; `alt`: picked with Ctrl / Alt from a painting tool; `before`: the
+  /** Color Picker drag; `alt`: picked with Alt from a painting tool; `before`: the
    *  colour it replaces (shown in the loupe ring). */
   let picking:
     { doc: Doc; primary: boolean; alt?: boolean; color?: Rgba; before: Rgba } | undefined;
@@ -272,7 +272,7 @@
     overlay.restore();
   }
 
-  /** The Color Picker tool, or a painting tool with Ctrl / Alt held: the loupe is shown. */
+  /** The Color Picker tool, or a painting tool with Alt held: the loupe is shown. */
   function loupeShown(): boolean {
     if (pan || spaceDown || guideHover || !documents.active) return false;
     if (picking) return true;
@@ -388,7 +388,7 @@
     requestDraw();
   });
 
-  // The loupe of a painting tool appears a moment after Ctrl / Alt is pressed.
+  // The loupe of a painting tool appears a moment after Alt is pressed.
   $effect(() => {
     void paintTools.picksColor(tools.active);
     requestDraw();
@@ -460,7 +460,7 @@
       return;
     }
     if ((e.button === 0 || e.button === 2) && paintTools.pickPress(tool, e)) {
-      // A painting tool + Ctrl or Alt: the Color Picker (left: FG, right: BG), of what is
+      // A painting tool + Alt: the Color Picker (left: FG, right: BG), of what is
       // seen.
       e.preventDefault();
       const primary = e.button === 0;
