@@ -273,6 +273,42 @@
     overlay.restore();
   }
 
+  /**
+   * The outline of the selected layers that reach outside the image (GIMP's layer boundary:
+   * yellow dashes): their pixels are clipped to the image, so without it nothing shows how
+   * far a larger layer (a dropped or pasted picture) goes. Layers inside the image have none.
+   */
+  function drawLayerBounds(doc: Doc) {
+    // A transform draws its own frame.
+    if (transformTools.session?.doc === doc) return;
+    const v = doc.view;
+    const dpr = devicePixelRatio;
+    const mv = moveTool.preview?.doc === doc ? moveTool.preview : undefined;
+    overlay.save();
+    overlay.lineWidth = dpr;
+    for (const l of doc.layers) {
+      if (!doc.selected.has(l.id) || !l.visible) continue;
+      const moved = mv?.layers.has(l.id);
+      const x = l.x + (moved ? mv!.dx : 0);
+      const y = l.y + (moved ? mv!.dy : 0);
+      if (x >= 0 && y >= 0 && x + l.width <= doc.width && y + l.height <= doc.height) continue;
+      overlay.beginPath();
+      overlay.rect(
+        Math.round(x * v.zoom + v.x) + 0.5,
+        Math.round(y * v.zoom + v.y) + 0.5,
+        Math.round(l.width * v.zoom),
+        Math.round(l.height * v.zoom),
+      );
+      overlay.setLineDash([]);
+      overlay.strokeStyle = "#000";
+      overlay.stroke();
+      overlay.setLineDash([4 * dpr, 4 * dpr]);
+      overlay.strokeStyle = "#ffe000";
+      overlay.stroke();
+    }
+    overlay.restore();
+  }
+
   /** The Color Picker tool, or a painting tool with Alt held: the loupe is shown. */
   function loupeShown(): boolean {
     if (pan || spaceDown || guideHover || !documents.active) return false;
@@ -289,6 +325,7 @@
 
   function drawOverlay(doc: Doc | undefined) {
     overlay.clearRect(0, 0, overlayEl.width, overlayEl.height);
+    if (doc) drawLayerBounds(doc);
     if (doc) drawGuides(doc);
     selectTools.drawOverlay(overlay, doc);
     paintTools.drawOverlay(overlay, doc, tools.active);
@@ -347,6 +384,8 @@
     void documents.active?.view;
     void documents.active?.revision;
     void documents.active?.guides;
+    // The outline of a selected layer larger than the image (drawLayerBounds).
+    void documents.active?.selected;
     void guidePrefs.show;
     requestDraw();
   });
@@ -451,7 +490,8 @@
 
   /** Cursor over a guide: "row" (horizontal), "col" or "". */
   let guideHover = $state("");
-  /** Crop tool cursor over its frame (resize at a handle, move inside). */
+  /** Cursor over the Crop tool's frame or the handles of the last selection shape (resize
+   *  at a handle, move inside). */
   let cropCursor = $state("");
 
   function devicePoint(e: { clientX: number; clientY: number }): [number, number] {
@@ -598,7 +638,9 @@
     cropCursor =
       tools.active === CROP_TOOL
         ? cropTool.cursor(doc, screenToImage(doc.view, ...devicePoint(e)))
-        : "";
+        : SELECTION_TOOLS.includes(tools.active)
+          ? selectTools.cursor(doc, tools.active, e, ...screenToImage(doc.view, ...devicePoint(e)))
+          : "";
     if (PAINT_TOOLS.includes(tools.active) || paintTools.busy) {
       const events = paintTools.busy ? (e.getCoalescedEvents?.() ?? [e]) : [e];
       if (!events.length) events.push(e);
@@ -733,7 +775,10 @@
         moveTool.key(doc, e);
       if (
         moved ||
-        (selectTools.busy && selectTools.key(e)) ||
+        // (Enter in a text field is that field's, not the last selection shape's.)
+        (SELECTION_TOOLS.includes(tools.active) &&
+          (selectTools.busy || !isTextInput(e.target)) &&
+          selectTools.key(e)) ||
         (transformTools.session?.doc === doc && transformTools.key(e)) ||
         (tools.active === CROP_TOOL && cropTool.session?.doc === doc && cropTool.key(e))
       ) {

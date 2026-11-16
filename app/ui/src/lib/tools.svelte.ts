@@ -148,13 +148,13 @@ export const TOOLS: ToolDef[] = [
     options: [
       {
         key: "target",
-        type: "select",
+        type: "modes",
         label: "Move",
-        choices: [
-          ["layer", "Layer"],
-          ["selection", "Selection"],
-        ],
         default: "layer",
+        choices: [
+          ["layer", "Layer: move the layer", "mode_layer"],
+          ["selection", "Selection: move the selection outline", "select"],
+        ],
       },
       { key: "pickLayer", type: "check", label: "Pick a layer (Shift toggles)", default: true },
     ],
@@ -164,7 +164,7 @@ export const TOOLS: ToolDef[] = [
     name: "Rectangle Select",
     icon: "tool_rect_select",
     keys: ["R"],
-    help: "Select a rectangular region",
+    help: "Select a rectangular region (Shift: add, Ctrl: subtract, both: intersect). Drag the handles of the last shape to resize it, inside it to move it; Enter ends",
     options: [
       ...selectionCommon,
       {
@@ -183,7 +183,7 @@ export const TOOLS: ToolDef[] = [
     name: "Ellipse Select",
     icon: "tool_ellipse_select",
     keys: ["E"],
-    help: "Select an elliptical region",
+    help: "Select an elliptical region (Shift: add, Ctrl: subtract, both: intersect). Drag the handles of the last shape to resize it, inside it to move it; Enter ends",
     options: selectionCommon,
   },
   {
@@ -248,13 +248,13 @@ export const TOOLS: ToolDef[] = [
     options: [
       {
         key: "direction",
-        type: "select",
+        type: "modes",
         label: "Direction",
-        choices: [
-          ["horizontal", "Horizontal"],
-          ["vertical", "Vertical"],
-        ],
         default: "horizontal",
+        choices: [
+          ["horizontal", "Horizontal: left to right", "flip"],
+          ["vertical", "Vertical: top to bottom", "flip_vertical"],
+        ],
       },
     ],
   },
@@ -442,19 +442,19 @@ export const TOOLS: ToolDef[] = [
     keys: ["Shift+U"],
     help: "Blur or sharpen with a brush (Ctrl: the other mode; Alt: pick a colour)",
     options: [
+      {
+        key: "type",
+        type: "modes",
+        label: "Mode",
+        default: "blur",
+        choices: [
+          ["blur", "Blur: soften", "tool_blur"],
+          ["sharpen", "Sharpen: make crisper", "tool_sharpen"],
+        ],
+      },
       brushSize,
       hardness,
       opacity,
-      {
-        key: "type",
-        type: "select",
-        label: "Type",
-        choices: [
-          ["blur", "Blur"],
-          ["sharpen", "Sharpen"],
-        ],
-        default: "blur",
-      },
       { key: "rate", type: "slider", label: "Rate", min: 0, max: 100, default: 50 },
     ],
   },
@@ -465,19 +465,19 @@ export const TOOLS: ToolDef[] = [
     keys: ["Shift+D"],
     help: "Lighten (dodge) or darken (burn) with a brush (Ctrl: the other mode; Alt: pick a colour)",
     options: [
+      {
+        key: "type",
+        type: "modes",
+        label: "Mode",
+        default: "dodge",
+        choices: [
+          ["dodge", "Dodge: lighten", "tool_dodge"],
+          ["burn", "Burn: darken", "tool_burn"],
+        ],
+      },
       brushSize,
       hardness,
       opacity,
-      {
-        key: "type",
-        type: "select",
-        label: "Type",
-        choices: [
-          ["dodge", "Dodge"],
-          ["burn", "Burn"],
-        ],
-        default: "dodge",
-      },
       {
         key: "range",
         type: "select",
@@ -638,9 +638,14 @@ function defaults(): Record<string, Record<string, OptionValue>> {
 
 class Tools {
   active = $state<string>(validTool(loadSetting("active-tool", "paintbrush")));
-  /** The Paintbrush icon follows its mode (the Pencil is a mode of it now). */
+  /** The icon of a tool with modes follows its mode (the Pencil is a mode of the
+   *  Paintbrush; Sharpen, Burn and the vertical Flip are modes too). */
   icon(id: string): string {
-    if (id === "paintbrush" && this.values.paintbrush?.mode === "pencil") return "tool_pencil";
+    const v = this.values[id];
+    if (id === "paintbrush" && v?.mode === "pencil") return "tool_pencil";
+    if (id === "blur-sharpen" && v?.type === "sharpen") return "tool_sharpen";
+    if (id === "dodge-burn" && v?.type === "burn") return "tool_burn";
+    if (id === "flip" && v?.direction === "vertical") return "flip_vertical";
     return toolDef(id).icon;
   }
   values = $state(shareSize(mergeSaved(defaults(), loadSetting("tool-options", {})), this.active));

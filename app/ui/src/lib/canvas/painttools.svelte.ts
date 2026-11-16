@@ -63,8 +63,8 @@ class PaintTools {
   /** Ctrl+Alt was pressed (sizing the brush): no picking until both keys are released, so
    *  the key released last does not bring the Color Picker up. */
   private combo = $state(false);
-  /** One of Ctrl / Alt has been held alone for PICK_DELAY_MS: the loupe may show (the
-   *  first key of Ctrl+Alt does not flash it). */
+  /** Alt has been held alone for PICK_DELAY_MS: the loupe may show (Alt as the first key
+   *  of Ctrl+Alt does not flash it). */
   private armed = $state(false);
   private armTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -285,7 +285,7 @@ class PaintTools {
     }
   }
 
-  /** Alt or Ctrl alone with a painting tool: the Color Picker, not the brush (no outline). */
+  /** Alt alone with a painting tool: the Color Picker, not the brush (no outline). */
   picksColor(tool: string): boolean {
     return !this.busy && this.armed && !this.combo && pickModifier(tool, this.ctrl, this.alt);
   }

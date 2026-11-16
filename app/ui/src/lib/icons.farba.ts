@@ -126,6 +126,14 @@ export const FARBA_ICONS: Record<string, string> = {
     ring(11, 12, 5.5) +
     p("M11 6.5a5.5 5.5 0 0 0 0 11z", "f") +
     p("M19.5 12h2M17.4 6.6l1.4-1.4M17.4 17.4l1.4 1.4M11 2.5v1.5M11 20v1.5", "a"),
+  tool_sharpen: p("M12 3.5l6 9-6 8-6-8z") + p("M6 12.5h12", "a"),
+  tool_burn:
+    p(
+      "M12 3c.6 3.2 5.5 5.6 5.5 11a5.5 5.5 0 0 1-11 0c0-2.3 1.1-4 2.3-5.2.2 1.6.9 2.6 1.9 3C10.2 9 10.6 5.6 12 3z",
+    ) + p("M12 18a2 2 0 0 0 2-2c0-1.3-1-2-2-3.3-1 1.3-2 2-2 3.3a2 2 0 0 0 2 2z", "af"),
+
+  // What the Move tool moves (tool options): a layer (the selection outline: "select").
+  mode_layer: p("M12 4.5l8.5 4.5-8.5 4.5L3.5 9z") + p("M3.5 13.5l8.5 4.5 8.5-4.5", "a"),
 
   // Selection combine modes (tool options).
   mode_replace: rect(5, 5, 14, 14, 1.5),
