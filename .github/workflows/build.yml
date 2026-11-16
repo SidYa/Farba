@@ -110,8 +110,6 @@ jobs:
             core/target/release/bundle/deb/*.deb
             core/target/release/bundle/rpm/*.rpm
           if-no-files-found: error
-            core/target/release/bundle/deb/*.deb
-            core/target/release/bundle/rpm/*.rpm
 
   macos:
     name: macOS ${{ matrix.arch }} (.dmg)
