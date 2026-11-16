@@ -135,6 +135,54 @@ export const FARBA_ICONS: Record<string, string> = {
   // What the Move tool moves (tool options): a layer (the selection outline: "select").
   mode_layer: p("M12 4.5l8.5 4.5-8.5 4.5L3.5 9z") + p("M3.5 13.5l8.5 4.5 8.5-4.5", "a"),
 
+  // Choices of the tool options (buttons, not drop-down lists).
+  // Interpolation: pixel steps, straight segments, a smooth curve, a sinc lobe.
+  opt_interp_none: p("M4 19h4v-4h4v-4h4V7h4"),
+  opt_interp_linear: p("M4 19l5.5-9 5 4L20 5"),
+  opt_interp_cubic: p("M4 18c4 0 5-11 8-11s4 7 8 7"),
+  opt_interp_lanczos: p("M3 14c1.5 0 1.5 3 3 3s2-12 6-12 4.5 12 6 12 1.5-3 3-3"),
+  // Clone / Heal alignment: the cross is the source, the ring the brush.
+  opt_align_none: p("M4.5 8h7M8 4.5v7") + ring(16, 16, 3.5, "a"),
+  opt_align_aligned:
+    p("M4 7h6M7 4v6") + ring(16.5, 16.5, 3.5, "a") + p("M9.6 9.6l4.2 4.2", undefined, DASH),
+  opt_align_registered: ring(12, 12, 6.5, "a") + p("M12 8.5v7M8.5 12h7"),
+  opt_align_fixed: rect(5, 5, 14, 14, 1.5) + p("M12 8.5v7M8.5 12h7", "a"),
+  // Bucket Fill colour: the FG (front) or the BG (back) square.
+  opt_fill_fg: rect(9.5, 9.5, 10.5, 10.5, 1.5) + rect(4, 4, 10.5, 10.5, 1.5, "af"),
+  opt_fill_bg:
+    p(
+      "M14.5 9.5h4a1.5 1.5 0 0 1 1.5 1.5v7.5a1.5 1.5 0 0 1-1.5 1.5H11a1.5 1.5 0 0 1-1.5-1.5v-4h5z",
+      "af",
+    ) + rect(4, 4, 10.5, 10.5, 1.5),
+  // Gradient: to transparent, its shape and how it repeats.
+  opt_grad_transparent:
+    rect(3.5, 4.5, 17, 15, 1.5) +
+    p("M4.4 5.4h4.1v13.2H4.4z", "af") +
+    dot(12, 9, 0.9) +
+    dot(16, 9, 0.9) +
+    dot(14, 12, 0.9) +
+    dot(12, 15, 0.9) +
+    dot(16, 15, 0.9),
+  opt_shape_linear:
+    p("M6 5v14", "a", ` stroke-width="3"`) +
+    p("M12 5v14", "a") +
+    p("M18 5v14", undefined, ` stroke-width="1"`),
+  opt_shape_radial: ring(12, 12, 8) + ring(12, 12, 4.2, "a") + dot(12, 12, 1.2, "af"),
+  opt_repeat_none: p("M3 18h5l8-12h5"),
+  opt_repeat_sawtooth: p("M3 18L9 6v12l6-12v12l6-12"),
+  opt_repeat_triangular: p("M3 18l4.5-12L12 18l4.5-12L21 18"),
+  // Dodge / Burn range: the dark, middle or light tones.
+  opt_range_shadows: ring(12, 12, 7.5) + dot(12, 12, 7.5),
+  opt_range_midtones: ring(12, 12, 7.5) + p("M12 4.5a7.5 7.5 0 0 0 0 15z", "f"),
+  opt_range_highlights: ring(12, 12, 7.5) + ring(12, 12, 3, "a"),
+  // Text: justification and the kind of box.
+  opt_justify_left: p("M4 6h16M4 10h10M4 14h16M4 18h10"),
+  opt_justify_center: p("M4 6h16M7 10h10M4 14h16M7 18h10"),
+  opt_justify_right: p("M4 6h16M10 10h10M4 14h16M10 18h10"),
+  opt_justify_fill: p("M4 6h16M4 10h16M4 14h16M4 18h16"),
+  opt_box_dynamic: rect(3.5, 5.5, 17, 13, 1.5, undefined, DASH) + p("M9 10h6M12 10v5", "a"),
+  opt_box_fixed: rect(3.5, 5.5, 17, 13, 1.5) + p("M9 10h6M12 10v5", "a"),
+
   // Selection combine modes (tool options).
   mode_replace: rect(5, 5, 14, 14, 1.5),
   mode_add: p("M4 4h11v5h5v11H9v-5H4z") + p("M12 12.5v4M10 14.5h4", "a"),

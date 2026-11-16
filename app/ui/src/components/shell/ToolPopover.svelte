@@ -147,7 +147,8 @@
           <span>{o.label}</span>
         </label>
       {:else if o.type === "modes"}
-        <div class="row">
+        <!-- Many buttons go under the label (they do not fit beside it). -->
+        <div class="row" class:stacked={(o.choices ?? MODES).length > 5}>
           <span class="label">{o.label}</span>
           <div class="modes" role="radiogroup" aria-label={o.label}>
             {#each o.choices ?? MODES as [mode, title, icon] (mode)}
@@ -158,7 +159,11 @@
                 aria-checked={value<string>(o) === mode}
                 onclick={() => tools.setOption(toolId, o.key, mode)}
               >
-                <Icon name={icon} size={16} />
+                {#if icon.startsWith("text:")}
+                  <span class="glyph">{icon.slice(5)}</span>
+                {:else}
+                  <Icon name={icon} size={16} />
+                {/if}
               </button>
             {/each}
           </div>
@@ -281,6 +286,16 @@
     border: 1px solid var(--border-soft);
     border-radius: var(--radius);
     background: transparent;
+  }
+  .row.stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .glyph {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
   }
   .modes button.on {
     background: var(--accent-soft);

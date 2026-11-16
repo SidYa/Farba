@@ -53,18 +53,23 @@ const WRAP =
 
 const wrapped = new Map<string, string>();
 
+/** The icon of the own set, wrapped in its <svg>. */
+function own(name: string): string | undefined {
+  let svg = wrapped.get(name);
+  if (svg) return svg;
+  const inner = FARBA_ICONS[name];
+  if (!inner) return undefined;
+  svg = `${WRAP}${inner}</svg>`;
+  wrapped.set(name, svg);
+  return svg;
+}
+
 export function iconSvg(name: string, set: IconSet = "accent"): string {
-  if (set !== "material") {
-    let svg = wrapped.get(name);
-    if (svg) return svg;
-    const inner = FARBA_ICONS[name];
-    if (inner) {
-      svg = `${WRAP}${inner}</svg>`;
-      wrapped.set(name, svg);
-      return svg;
-    }
-  }
-  const svg = material[MATERIAL_NAMES[name] ?? name];
+  // The Material set lacks some names (the choices of the tool options): the own icon then.
+  const svg =
+    set === "material"
+      ? (material[MATERIAL_NAMES[name] ?? name] ?? own(name))
+      : (own(name) ?? material[MATERIAL_NAMES[name] ?? name]);
   if (!svg) {
     console.warn(`unknown icon: ${name}`);
     return "";

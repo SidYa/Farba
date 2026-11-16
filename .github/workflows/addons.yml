@@ -113,6 +113,11 @@ jobs:
     name: Package (.fba)
     needs: [windows, linux, macos]
     runs-on: ubuntu-24.04
+    # Shared with the release job of build.yml: the two attach to one draft release, one
+    # after the other (at once they made two drafts of the tag at times).
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v8

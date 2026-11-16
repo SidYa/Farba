@@ -27,14 +27,7 @@
       <div class="dim">© 2026 Sergii Sidko</div>
     </div>
   </div>
-  <div class="donate">
-    <p>
-      Farba was developed in Ukraine during Russia's brutal invasion, to the sound of air raid
-      sirens, bombings and mortal danger. Even if the author does not survive, this work will go on
-      being useful to others.
-    </p>
-    <p>I will be grateful for any donation.</p>
-  </div>
+  <div class="donate">The author will be grateful for any donation.</div>
   {#snippet buttons()}
     <!-- PayPal on the left of the button row, Licenses and Close on the right (owner request). -->
     <button type="button" class="paypal" onclick={() => void invoke("open_donate")}>
@@ -66,12 +59,6 @@
     padding-top: 10px;
     border-top: 1px solid var(--border-soft);
   }
-  .donate p {
-    margin: 0 0 8px;
-  }
-  .donate p:last-child {
-    margin: 0;
-  }
   .paypal {
     margin-right: auto;
     display: inline-flex;
@@ -84,6 +71,14 @@
     background: var(--accent);
     color: var(--accent-fg);
     cursor: pointer;
+    /* The heart in the text colour: its accent colour is the button's background. */
+    --icon-accent: currentColor;
+  }
+  /* Stays the accent colour under the pointer (the other buttons turn grey, on which the
+     light text would not read). */
+  .paypal:hover {
+    background: var(--accent);
+    filter: brightness(1.1);
   }
   .with-icon {
     display: inline-flex;

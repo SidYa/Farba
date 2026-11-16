@@ -18,8 +18,9 @@ export type ToolOption =
     }
   | { key: string; type: "select"; label: string; choices: [string, string][]; default: string }
   | { key: string; type: "check"; label: string; default: boolean }
-  // Icon buttons, one per mode: [value, tooltip, icon] (the selection combine modes when
-  // `choices` is left out).
+  // Buttons, one per choice: [value, tooltip, icon] (the selection combine modes when
+  // `choices` is left out). Every choice of a tool is made this way, not with a drop-down
+  // list (owner request 2026-11-16). An icon "text:X" is the letter X.
   | {
       key: string;
       type: "modes";
@@ -62,33 +63,33 @@ const thresholdOptions: ToolOptionDef[] = [
   { key: "threshold", type: "slider", label: "Threshold", min: 0, max: 255, default: 15 },
   {
     key: "criterion",
-    type: "select",
+    type: "modes",
     label: "Select by",
-    choices: [
-      ["composite", "Composite"],
-      ["red", "Red"],
-      ["green", "Green"],
-      ["blue", "Blue"],
-      ["alpha", "Alpha"],
-      ["hue", "HSV Hue"],
-      ["saturation", "HSV Saturation"],
-      ["value", "HSV Value"],
-    ],
     default: "composite",
+    choices: [
+      ["composite", "Composite: all channels", "text:C"],
+      ["red", "Red", "text:R"],
+      ["green", "Green", "text:G"],
+      ["blue", "Blue", "text:B"],
+      ["alpha", "Alpha", "text:A"],
+      ["hue", "HSV Hue", "text:H"],
+      ["saturation", "HSV Saturation", "text:S"],
+      ["value", "HSV Value", "text:V"],
+    ],
   },
 ];
 
 const interpolation: ToolOption = {
   key: "interpolation",
-  type: "select",
+  type: "modes",
   label: "Interpolation",
-  choices: [
-    ["none", "None"],
-    ["linear", "Linear"],
-    ["cubic", "Cubic"],
-    ["lanczos", "Lanczos"],
-  ],
   default: "cubic",
+  choices: [
+    ["none", "None: nearest pixel", "opt_interp_none"],
+    ["linear", "Linear", "opt_interp_linear"],
+    ["cubic", "Cubic", "opt_interp_cubic"],
+    ["lanczos", "Lanczos", "opt_interp_lanczos"],
+  ],
 };
 
 const brushSize: ToolOption = {
@@ -121,15 +122,15 @@ const hardness: ToolOption = {
 /** Clone / Heal: where the source pixels are taken relative to the stroke (GIMP). */
 const cloneAlignment: ToolOption = {
   key: "alignment",
-  type: "select",
+  type: "modes",
   label: "Alignment",
-  choices: [
-    ["none", "None"],
-    ["aligned", "Aligned"],
-    ["registered", "Registered"],
-    ["fixed", "Fixed"],
-  ],
   default: "none",
+  choices: [
+    ["none", "None: every stroke starts at the source", "opt_align_none"],
+    ["aligned", "Aligned: the source follows the brush", "opt_align_aligned"],
+    ["registered", "Registered: the same place of the source layer", "opt_align_registered"],
+    ["fixed", "Fixed: always the source point", "opt_align_fixed"],
+  ],
 };
 const sampleMergedSource: ToolOption = {
   key: "sampleMerged",
@@ -294,23 +295,23 @@ export const TOOLS: ToolDef[] = [
     options: [
       {
         key: "fill",
-        type: "select",
+        type: "modes",
         label: "Fill",
-        choices: [
-          ["fg", "FG colour"],
-          ["bg", "BG colour"],
-        ],
         default: "fg",
+        choices: [
+          ["fg", "FG colour", "opt_fill_fg"],
+          ["bg", "BG colour", "opt_fill_bg"],
+        ],
       },
       {
         key: "area",
-        type: "select",
+        type: "modes",
         label: "Affected area",
-        choices: [
-          ["similar", "Fill similar colours"],
-          ["selection", "Fill whole selection"],
-        ],
         default: "similar",
+        choices: [
+          ["similar", "Fill similar colours", "tool_fuzzy_select"],
+          ["selection", "Fill whole selection", "select"],
+        ],
       },
       opacity,
       { key: "transparent", type: "check", label: "Fill transparent areas", default: true },
@@ -327,34 +328,34 @@ export const TOOLS: ToolDef[] = [
     options: [
       {
         key: "gradient",
-        type: "select",
+        type: "modes",
         label: "Gradient",
-        choices: [
-          ["fg-bg", "FG to BG"],
-          ["fg-transparent", "FG to transparent"],
-        ],
         default: "fg-bg",
+        choices: [
+          ["fg-bg", "FG to BG", "tool_gradient"],
+          ["fg-transparent", "FG to transparent", "opt_grad_transparent"],
+        ],
       },
       {
         key: "shape",
-        type: "select",
+        type: "modes",
         label: "Shape",
-        choices: [
-          ["linear", "Linear"],
-          ["radial", "Radial"],
-        ],
         default: "linear",
+        choices: [
+          ["linear", "Linear", "opt_shape_linear"],
+          ["radial", "Radial", "opt_shape_radial"],
+        ],
       },
       {
         key: "repeat",
-        type: "select",
+        type: "modes",
         label: "Repeat",
-        choices: [
-          ["none", "None"],
-          ["sawtooth", "Sawtooth"],
-          ["triangular", "Triangular"],
-        ],
         default: "none",
+        choices: [
+          ["none", "None", "opt_repeat_none"],
+          ["sawtooth", "Sawtooth", "opt_repeat_sawtooth"],
+          ["triangular", "Triangular", "opt_repeat_triangular"],
+        ],
       },
       { key: "reverse", type: "check", label: "Reverse", default: false },
       opacity,
@@ -480,14 +481,14 @@ export const TOOLS: ToolDef[] = [
       opacity,
       {
         key: "range",
-        type: "select",
+        type: "modes",
         label: "Range",
-        choices: [
-          ["shadows", "Shadows"],
-          ["midtones", "Midtones"],
-          ["highlights", "Highlights"],
-        ],
         default: "midtones",
+        choices: [
+          ["shadows", "Shadows", "opt_range_shadows"],
+          ["midtones", "Midtones", "opt_range_midtones"],
+          ["highlights", "Highlights", "opt_range_highlights"],
+        ],
       },
       { key: "exposure", type: "slider", label: "Exposure", min: 0, max: 100, default: 50 },
     ],
@@ -512,15 +513,15 @@ export const TOOLS: ToolDef[] = [
       { key: "antialias", type: "check", label: "Antialiasing", default: true },
       {
         key: "justify",
-        type: "select",
+        type: "modes",
         label: "Justify",
-        choices: [
-          ["left", "Left"],
-          ["center", "Center"],
-          ["right", "Right"],
-          ["fill", "Filled"],
-        ],
         default: "left",
+        choices: [
+          ["left", "Left", "opt_justify_left"],
+          ["center", "Center", "opt_justify_center"],
+          ["right", "Right", "opt_justify_right"],
+          ["fill", "Filled", "opt_justify_fill"],
+        ],
       },
       {
         key: "indent",
@@ -551,13 +552,13 @@ export const TOOLS: ToolDef[] = [
       },
       {
         key: "box",
-        type: "select",
+        type: "modes",
         label: "Box",
-        choices: [
-          ["dynamic", "Dynamic"],
-          ["fixed", "Fixed"],
-        ],
         default: "dynamic",
+        choices: [
+          ["dynamic", "Dynamic: the box grows with the text", "opt_box_dynamic"],
+          ["fixed", "Fixed: the text wraps in the box", "opt_box_fixed"],
+        ],
       },
     ],
   },
