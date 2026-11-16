@@ -36,7 +36,7 @@ jobs:
       - name: Build
         working-directory: core
         run: cargo build --release -p farba-ai
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: ai-windows
           path: |
@@ -67,7 +67,7 @@ jobs:
       # Builds libfarba_ai.so into core/target/addons/linux and checks its glibc needs.
       - name: Build
         run: bash app/build-linux.sh --addons
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: ai-linux
           path: core/target/addons/linux/libfarba_ai.so
@@ -109,7 +109,7 @@ jobs:
           fi
           # Unsigned code does not load on Apple Silicon: an ad-hoc signature.
           codesign --force --sign - out/libfarba_ai.dylib
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: ai-macos
           path: core/out/libfarba_ai.dylib
@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           path: libs
           merge-multiple: true
@@ -136,7 +136,7 @@ jobs:
           ls -l stage
           (cd stage && zip -9 ../out/add-ai-backrem.fba *)
           unzip -l out/add-ai-backrem.fba
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: add-ai-backrem
           path: out/add-ai-backrem.fba
